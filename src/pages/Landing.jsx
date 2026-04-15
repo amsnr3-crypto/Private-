@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import './Landing.css'
@@ -9,36 +9,42 @@ const SERVICES = [
     title: 'Express Air Freight',
     desc: 'Fast air delivery from major US retailers directly to Gulf countries. DHL-level speed at competitive rates.',
     highlight: '5–10 business days',
+    popular: false,
   },
   {
     icon: '🚪',
     title: 'Door-to-Door Delivery',
     desc: 'We collect your packages from any US address and deliver straight to your door in Saudi Arabia, UAE, Kuwait, and more.',
     highlight: 'Full pickup & delivery',
+    popular: false,
   },
   {
     icon: '📦',
     title: 'Package Consolidation',
     desc: 'Combine multiple US purchases into a single shipment. Save significantly on shipping costs and customs fees.',
     highlight: 'Up to 60% savings',
+    popular: true,
   },
   {
     icon: '🚗',
     title: 'Vehicle & Cargo Shipping',
     desc: 'Specialized shipping for cars, motorcycles, spare parts, and oversized cargo to all Gulf destinations.',
     highlight: 'Any size, any weight',
+    popular: false,
   },
   {
     icon: '🔒',
     title: 'Secure Warehousing',
     desc: 'Your packages are stored safely in our Houston facility until consolidated and ready for shipment.',
     highlight: 'Houston, TX facility',
+    popular: false,
   },
   {
     icon: '📊',
     title: 'Live Tracking',
     desc: 'Monitor every step of your shipment journey with our real-time tracking portal from pickup to delivery.',
     highlight: 'Real-time updates',
+    popular: false,
   },
 ]
 
@@ -47,25 +53,25 @@ const STEPS = [
     num: '01',
     icon: '🛒',
     title: 'Shop in the USA',
-    desc: 'Buy from any US retailer — Amazon, Apple, Nike, Costco. Use your unique Speedy Texas address as the delivery address.',
+    desc: 'Buy from any US retailer — Amazon, Apple, Nike, Costco. Use your unique Speedy Texas address at checkout.',
   },
   {
     num: '02',
     icon: '🏭',
     title: 'We Receive It',
-    desc: 'Your package arrives at our Houston warehouse. We inspect it, photograph it, and notify you immediately.',
+    desc: 'Your package arrives at our Houston warehouse. We inspect, photograph, and notify you immediately.',
   },
   {
     num: '03',
     icon: '✈️',
     title: 'We Ship to the Gulf',
-    desc: 'We handle all customs documentation, export paperwork, and ship your package directly to your Gulf destination.',
+    desc: 'We handle all customs documentation, export paperwork, and ship your package to your Gulf destination.',
   },
   {
     num: '04',
     icon: '🎉',
     title: 'Delivered to Your Door',
-    desc: 'Your package arrives at your home or office. Track every step in real-time through your personal dashboard.',
+    desc: 'Your package arrives at your home or office. Track every step in real-time through your dashboard.',
   },
 ]
 
@@ -77,10 +83,10 @@ const STATS = [
 ]
 
 const TRUST_ITEMS = [
-  { icon: '🏆', title: 'Licensed & Insured',   desc: 'Fully registered freight forwarder with comprehensive cargo insurance on every shipment.' },
-  { icon: '💬', title: 'Arabic & English Support', desc: 'Bilingual customer service team available 6 days a week via WhatsApp, email, and phone.' },
-  { icon: '💳', title: 'Transparent Pricing',  desc: 'No hidden fees. Know your exact shipping cost before you send. Instant calculator available.' },
-  { icon: '⚡', title: 'Fast Processing',      desc: 'Packages are processed and dispatched within 24–48 hours of arriving at our Houston warehouse.' },
+  { icon: '🏆', title: 'Licensed & Insured',        desc: 'Fully registered freight forwarder with comprehensive cargo insurance on every shipment.' },
+  { icon: '💬', title: 'Arabic & English Support',  desc: 'Bilingual customer service team available 6 days a week via WhatsApp, email, and phone.' },
+  { icon: '💳', title: 'Transparent Pricing',       desc: 'No hidden fees. Know your exact shipping cost before you send. Instant calculator available.' },
+  { icon: '⚡', title: 'Fast Processing',           desc: 'Packages are processed and dispatched within 24–48 hours of arriving at our Houston warehouse.' },
 ]
 
 const DESTINATIONS = [
@@ -93,35 +99,55 @@ const DESTINATIONS = [
 ]
 
 export default function Landing() {
-  const navigate = useNavigate()
-
   return (
     <div className="landing">
       <Navbar />
 
-      {/* ── Hero ────────────────────────────────────────────────────── */}
+      {/* ── Hero ── */}
       <section className="hero">
         <div className="hero-bg" />
         <div className="hero-glow" />
         <div className="container hero-inner">
           <div className="hero-content fade-up">
-            <div className="hero-badge">🇺🇸 → 🌍 &nbsp; USA to Gulf Shipping</div>
+
+            <div className="hero-badge">
+              🇺🇸 → 🌍 &nbsp; USA to Gulf Shipping — Fast &amp; Affordable
+            </div>
+
             <h1 className="hero-title">
               Your Shortcut from<br />
               <span className="hero-title-accent">America to the Gulf</span>
             </h1>
+
             <p className="hero-subtitle">
               Shop from any US store and get your packages delivered fast and safely
-              to Saudi Arabia, UAE, Kuwait, Qatar, Bahrain & Oman.
+              to Saudi Arabia, UAE, Kuwait, Qatar, Bahrain &amp; Oman.
             </p>
+
             <div className="hero-actions">
-              <Link to="/signup" className="btn btn-primary btn-lg">
-                Start Shipping Free →
+              <Link to="/signup" className="btn btn-primary btn-xl">
+                Get Your Free US Address →
               </Link>
               <Link to="/calculator" className="btn btn-outline btn-lg">
                 Calculate Rates
               </Link>
             </div>
+
+            <div className="hero-social-proof">
+              <div className="proof-avatars">
+                {['M','F','K','A','S'].map(l => (
+                  <div key={l} className="proof-avatar">{l}</div>
+                ))}
+              </div>
+              <span>Trusted by <strong>50,000+</strong> Gulf shoppers</span>
+            </div>
+
+            <div className="hero-perks">
+              <span className="perk-chip">✅ Free US address</span>
+              <span className="perk-chip">✅ No subscription</span>
+              <span className="perk-chip">✅ Setup in 2 minutes</span>
+            </div>
+
             <div className="hero-destinations">
               {DESTINATIONS.map(d => (
                 <span key={d.name} className="dest-chip">
@@ -130,6 +156,7 @@ export default function Landing() {
               ))}
             </div>
           </div>
+
           <div className="hero-visual fade-up-2">
             <div className="hero-card-mock">
               <div className="mock-header">
@@ -176,6 +203,7 @@ export default function Landing() {
             </div>
           </div>
         </div>
+
         <div className="hero-stats">
           <div className="container">
             <div className="stats-bar">
@@ -190,7 +218,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Services ────────────────────────────────────────────────── */}
+      {/* ── Services ── */}
       <section className="section services-section" id="services">
         <div className="container">
           <div className="section-header center">
@@ -203,7 +231,8 @@ export default function Landing() {
           </div>
           <div className="services-grid">
             {SERVICES.map(s => (
-              <div key={s.title} className="service-card">
+              <div key={s.title} className={`service-card ${s.popular ? 'service-popular' : ''}`}>
+                {s.popular && <div className="popular-badge">⭐ Most Popular</div>}
                 <div className="service-icon">{s.icon}</div>
                 <h3>{s.title}</h3>
                 <p>{s.desc}</p>
@@ -214,7 +243,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── How It Works ────────────────────────────────────────────── */}
+      {/* ── How It Works ── */}
       <section className="section how-section" id="how-it-works">
         <div className="container">
           <div className="section-header center">
@@ -222,29 +251,31 @@ export default function Landing() {
             <h2 className="section-title">Ship in 4 Simple Steps</h2>
             <div className="divider" style={{ margin: '0 auto 20px' }} />
             <p className="section-subtitle">
-              From clicking "Add to Cart" in the USA to receiving your package at the Gulf — we handle everything in between.
+              From clicking "Add to Cart" in the USA to receiving your package in the Gulf — we handle everything in between.
             </p>
           </div>
           <div className="steps-grid">
             {STEPS.map((s, i) => (
               <div key={s.num} className="step-card">
-                <div className="step-num">{s.num}</div>
-                <div className="step-icon">{s.icon}</div>
+                <div className="step-num-badge">{s.num}</div>
+                <div className="step-icon-wrap">
+                  <span className="step-icon">{s.icon}</span>
+                </div>
                 <h3>{s.title}</h3>
                 <p>{s.desc}</p>
-                {i < STEPS.length - 1 && <div className="step-arrow">→</div>}
               </div>
             ))}
           </div>
           <div className="steps-cta">
-            <Link to="/signup" className="btn btn-primary btn-lg">
+            <Link to="/signup" className="btn btn-primary btn-xl">
               Get Your Free US Address →
             </Link>
+            <p className="steps-cta-note">Free to sign up · No credit card required</p>
           </div>
         </div>
       </section>
 
-      {/* ── Trust ───────────────────────────────────────────────────── */}
+      {/* ── Trust ── */}
       <section className="section trust-section" id="trust">
         <div className="container">
           <div className="trust-inner">
@@ -308,22 +339,33 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Calculator CTA ──────────────────────────────────────────── */}
+      {/* ── Signup CTA Banner ── */}
       <section className="cta-banner">
         <div className="container">
           <div className="cta-inner">
-            <div>
-              <h2>Know Your Rate Before You Ship</h2>
-              <p>Use our instant rate calculator — no signup needed.</p>
+            <div className="cta-text">
+              <div className="cta-tag">Start Today — It's Free</div>
+              <h2>Get Your US Address in 2 Minutes</h2>
+              <p>No subscription. No monthly fee. Pay only when you ship.</p>
+              <div className="cta-perks">
+                <span>✅ Free Houston, TX address</span>
+                <span>✅ Instant access</span>
+                <span>✅ Arabic &amp; English support</span>
+              </div>
             </div>
-            <Link to="/calculator" className="btn btn-primary btn-lg">
-              Calculate Shipping Cost →
-            </Link>
+            <div className="cta-actions">
+              <Link to="/signup" className="btn btn-white btn-xl">
+                Create Free Account →
+              </Link>
+              <Link to="/calculator" className="btn btn-outline-white btn-lg">
+                Calculate Rates First
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── Contact ─────────────────────────────────────────────────── */}
+      {/* ── Contact ── */}
       <section className="section contact-section" id="contact">
         <div className="container">
           <div className="section-header center">
@@ -335,7 +377,7 @@ export default function Landing() {
             <div className="contact-card">
               <div className="contact-icon">💬</div>
               <h3>WhatsApp</h3>
-              <p>Chat with us instantly on WhatsApp — available in Arabic & English.</p>
+              <p>Chat with us instantly on WhatsApp — available in Arabic &amp; English.</p>
               <a href="#" className="btn btn-dark btn-sm" style={{ marginTop: '16px' }}>Open WhatsApp</a>
             </div>
             <div className="contact-card">
