@@ -38,6 +38,14 @@ function formatCost(usd) {
   return '$' + Number(usd).toFixed(2)
 }
 
+function estimatedDelivery(isoDate) {
+  if (!isoDate) return null
+  const date = new Date(isoDate)
+  // Add 7 business days (approx 10 calendar days)
+  date.setDate(date.getDate() + 10)
+  return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+}
+
 export default function Tracking() {
   const [searchParams] = useSearchParams()
   const [input, setInput]       = useState(searchParams.get('id') || '')
@@ -47,40 +55,37 @@ export default function Tracking() {
 
   const statusInfo  = shipment ? (SHIPMENT_STATUSES[shipment.status] || null) : null
   const currentStep = statusInfo ? statusInfo.step : 0
+  const isDelivered = shipment?.status === 'delivered'
 
   useEffect(() => {
     const id = searchParams.get('id')
     if (id) handleSearch(id)
   }, [])
 
- const handleSearch = async (id) => {
-  const trackId = (id || input).trim().toUpperCase()
-  if (!trackId) return
+  const handleSearch = async (id) => {
+    const trackId = (id || input).trim().toUpperCase()
+    if (!trackId) return
 
-  setLoading(true)
-  setNotFound(false)
-  setShipment(null)
+    setLoading(true)
+    setNotFound(false)
+    setShipment(null)
 
-  const { data, error } = await supabase.rpc('get_shipment_by_tracking_id', {
-    p_tracking_id: trackId,
-  })
-  setLoading(false)
+    const { data, error } = await supabase.rpc('get_shipment_by_tracking_id', {
+      p_tracking_id: trackId,
+    })
 
-  if (error) {
-    console.error('RPC error:', error)
-    setNotFound(true)
-    return
+    setLoading(false)
+
+    if (error) {
+      console.error('RPC error:', error)
+      setNotFound(true)
+      return
+    }
+
+    const row = Array.isArray(data) ? data[0] : data
+    if (!row) { setNotFound(true); return }
+    setShipment(row)
   }
-
-  const row = Array.isArray(data) ? data[0] : data
-
-  if (!row) {
-    setNotFound(true)
-    return
-  }
-
-  setShipment(row)
-}
 
   return (
     <div className="page-wrapper">
@@ -101,7 +106,7 @@ export default function Tracking() {
                   className="tracking-input"
                   value={input}
                   onChange={e => { setInput(e.target.value.toUpperCase()); setNotFound(false) }}
-                  onKeyDown={e => e.key === 'Enter' && handleSearch()}
+                  onKeyDown={e => e.key === 'Enter' && handleSearch(input)}
                 />
               </div>
               <button className="btn btn-primary btn-lg" onClick={() => handleSearch(input)} disabled={loading}>
@@ -126,7 +131,7 @@ export default function Tracking() {
           {shipment && (
             <div className="tracking-results fade-up">
 
-              {/* Summary Card */}
+              {/* ── Summary Card ── */}
               <div className="tracking-summary-card">
                 <div className="tsm-left">
                   <div className="tsm-id">{shipment.tracking_id}</div>
@@ -145,12 +150,52 @@ export default function Tracking() {
                     <span><strong>Receiver:</strong> {shipment.receiver}</span>
                     <span><strong>Weight:</strong> {shipment.weight_kg != null ? `${shipment.weight_kg} kg` : '—'}</span>
                     <span><strong>Cost:</strong> {formatCost(shipment.cost_usd)}</span>
-                    <span><strong>Date:</strong> {formatDate(shipment.created_at)}</span>
+                    <span><strong>Submitted:</strong> {formatDate(shipment.created_at)}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Progress Stepper */}
+              {/* ── Estimated Delivery ── */}
+              {!isDelivered && (
+                <div className="tracking-card est-delivery-card">
+                  <div className="est-delivery">
+                    <div className="est-left">
+                      <div className="est-label">📅 Estimated Delivery</div>
+                      <div className="est-date">{estimatedDelivery(shipment.created_at)}</div>
+                      <div className="est-note">Standard international shipping · 5–7 business days</div>
+                    </div>
+                    <div className="est-right">
+                      <div className="est-route">
+                        <div className="est-point">
+                          <span className="est-flag">🇺🇸</span>
+                          <span>Houston, TX</span>
+                        </div>
+                        <div className="est-connector">
+                          <div className="est-dashes" />
+                          <span className="est-plane">✈️</span>
+                          <div className="est-dashes" />
+                        </div>
+                        <div className="est-point">
+                          <span className="est-flag">{flagFor(shipment.country)}</span>
+                          <span>{shipment.country}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {isDelivered && (
+                <div className="tracking-card delivered-banner">
+                  <span className="delivered-icon">🎉</span>
+                  <div>
+                    <div className="delivered-title">Shipment Delivered!</div>
+                    <div className="delivered-sub">Your package has been successfully delivered.</div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── Progress Stepper ── */}
               <div className="tracking-card">
                 <h3 className="tracking-card-title">Shipment Progress</h3>
                 <div className="stepper">
@@ -165,12 +210,13 @@ export default function Tracking() {
                             {done ? '✓' : active ? step.icon : <span className="step-num-small">{i + 1}</span>}
                           </div>
                           {i < STATUS_STEPS.length - 1 && (
-                            <div className={`stepper-line ${done ? 'done' : ''}`} />
+                            <div className={`stepper-line ${done ? 'done' : active ? 'active' : ''}`} />
                           )}
                         </div>
                         <div className="stepper-label">
                           <span className="sl-main">{step.label}</span>
-                          {active && <span className="sl-badge">Current</span>}
+                          {active && <span className="sl-badge">● Current</span>}
+                          {done  && <span className="sl-done">✓ Done</span>}
                         </div>
                       </div>
                     )
@@ -178,19 +224,31 @@ export default function Tracking() {
                 </div>
               </div>
 
-              {/* Timeline */}
+              {/* ── Timeline ── */}
               <div className="tracking-card">
                 <h3 className="tracking-card-title">Shipment Timeline</h3>
                 <div className="timeline">
                   <div className="timeline-event done">
                     <div className="tl-indicator">
                       <div className="tl-dot done" />
+                      <div className="tl-line done" />
                     </div>
                     <div className="tl-content">
                       <div className="tl-event">Shipment request received</div>
                       <div className="tl-meta">
                         <span className="tl-location">📍 Houston, TX, USA</span>
                         <span className="tl-date">{formatDate(shipment.created_at)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="timeline-event pending">
+                    <div className="tl-indicator">
+                      <div className="tl-dot pending" />
+                    </div>
+                    <div className="tl-content">
+                      <div className="tl-event">Further updates coming soon</div>
+                      <div className="tl-meta">
+                        <span className="tl-location">📍 In progress</span>
                       </div>
                     </div>
                   </div>

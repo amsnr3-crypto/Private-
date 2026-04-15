@@ -200,37 +200,70 @@
 }
 .cost-cell { font-weight: 600; color: var(--text-primary); }
 
+/* ─── Empty Shipments ──────────────────────────────────────────────── */
+.empty-shipments {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-muted);
+}
+.empty-shipments p {
+  font-size: 15px;
+  line-height: 1.7;
+}
+.empty-shipments a {
+  color: var(--primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+.empty-shipments a:hover { text-decoration: underline; }
+
 /* ─── Mobile Cards ─────────────────────────────────────────────────── */
 .shipment-cards-mobile { display: none; }
 
 .shipment-card-mobile {
-  background: var(--bg);
+  background: #fff;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 16px;
+  border-radius: var(--radius);
+  padding: 16px 18px;
   margin-bottom: 12px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow .2s;
 }
+.shipment-card-mobile:hover { box-shadow: var(--shadow); }
+
 .scm-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
+  gap: 8px;
 }
 .scm-desc {
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 700;
+  font-size: 15px;
   color: var(--text-primary);
   margin-bottom: 6px;
 }
 .scm-meta {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   font-size: 13px;
   color: var(--text-secondary);
   flex-wrap: wrap;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
 }
-.scm-track { display: block; text-align: center; }
+.scm-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.scm-track {
+  display: block;
+  text-align: center;
+  font-weight: 600;
+}
 
 /* ─── Quick Actions ────────────────────────────────────────────────── */
 .quick-actions {
