@@ -33,6 +33,14 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
+function formatDateTime(iso) {
+  if (!iso) return '—'
+  return new Date(iso).toLocaleString('en-US', {
+    year: 'numeric', month: 'short', day: 'numeric',
+    hour: '2-digit', minute: '2-digit', hour12: true,
+  })
+}
+
 function formatCost(usd) {
   if (usd == null) return '—'
   return '$' + Number(usd).toFixed(2)
@@ -150,7 +158,7 @@ export default function Tracking() {
                     <span><strong>Receiver:</strong> {shipment.receiver}</span>
                     <span><strong>Weight:</strong> {shipment.weight_kg != null ? `${shipment.weight_kg} kg` : '—'}</span>
                     <span><strong>Cost:</strong> {formatCost(shipment.cost_usd)}</span>
-                    <span><strong>Submitted:</strong> {formatDate(shipment.created_at)}</span>
+                    <span><strong>Submitted:</strong> {formatDateTime(shipment.created_at)}</span>
                   </div>
                 </div>
               </div>
@@ -237,7 +245,7 @@ export default function Tracking() {
                       <div className="tl-event">Shipment request received</div>
                       <div className="tl-meta">
                         <span className="tl-location">📍 Houston, TX, USA</span>
-                        <span className="tl-date">{formatDate(shipment.created_at)}</span>
+                        <span className="tl-date">{formatDateTime(shipment.created_at)}</span>
                       </div>
                     </div>
                   </div>
