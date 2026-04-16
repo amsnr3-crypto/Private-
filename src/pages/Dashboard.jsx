@@ -166,7 +166,7 @@ export default function Dashboard() {
                           <td><span className="tracking-id">{s.tracking_id}</span></td>
                           <td>
                             <div className="shipment-desc">{s.description}</div>
-                            <div className="shipment-receiver">To: {s.receiver}</div>
+                            {s.receiver && <div className="shipment-receiver">To: {s.receiver}</div>}
                           </td>
                           <td><span className="country-chip">{flagFor(s.country)} {s.country}</span></td>
                           <td className="weight-cell">{s.weight_kg != null ? `${s.weight_kg} kg` : '—'}</td>

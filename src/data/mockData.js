@@ -8,6 +8,7 @@ export const DESTINATIONS = [
 ]
 
 export const SHIPMENT_STATUSES = {
+  pending:     { label: 'Pending Review',      color: 'neutral', icon: '⏳', step: 1 },
   received:    { label: 'Received in Houston', color: 'info',    icon: '📦', step: 1 },
   processing:  { label: 'Processing',          color: 'warning', icon: '⚙️', step: 2 },
   in_transit:  { label: 'In Transit',          color: 'info',    icon: '✈️', step: 3 },
