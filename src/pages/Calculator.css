@@ -122,6 +122,13 @@
 }
 .dim-label { font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: block; }
 
+.unit-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  padding-left: 2px;
+}
+
 .dim-preview {
   background: #EFF6FF;
   border: 1px solid #BFDBFE;
@@ -222,6 +229,7 @@
 
 .wb-row.billable { background: rgba(26,58,143,.04); padding: 10px 12px; margin: 4px -12px; border-radius: var(--radius-sm); border-bottom: none; }
 .wb-row.billable span { font-weight: 600; color: var(--text-primary); }
+.wb-row.wb-highlight { background: #FFFBEB; color: #92400E; font-weight: 500; }
 .wb-note { font-size: 11px; color: var(--text-muted); margin-top: 8px; }
 
 .cb-total {
@@ -305,6 +313,8 @@
 }
 .rate-table tbody tr:last-child td { border-bottom: none; }
 .rate-table tbody tr:hover { background: #FAFBFF; }
+.rate-table tbody tr.rate-row-active { background: #EEF3FF; }
+.rate-table tbody tr.rate-row-active td { color: var(--primary); }
 .country-cell { font-weight: 500; color: var(--text-primary); }
 
 .rate-note {
