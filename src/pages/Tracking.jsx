@@ -147,7 +147,7 @@ export default function Tracking() {
                   <div className="tsm-route">
                     <span>🇺🇸 Houston, TX, USA</span>
                     <span className="route-arrow">→</span>
-                    <span>{flagFor(shipment.country)} {shipment.country}</span>
+                    <span>{flagFor(shipment.country)} {shipment.city ? `${shipment.city}, ${shipment.country}` : shipment.country}</span>
                   </div>
                 </div>
                 <div className="tsm-right">
@@ -185,7 +185,7 @@ export default function Tracking() {
                         </div>
                         <div className="est-point">
                           <span className="est-flag">{flagFor(shipment.country)}</span>
-                          <span>{shipment.country}</span>
+                          <span>{shipment.city ? `${shipment.city}, ${shipment.country}` : shipment.country}</span>
                         </div>
                       </div>
                     </div>

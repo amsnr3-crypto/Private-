@@ -168,7 +168,7 @@ export default function Dashboard() {
                             <div className="shipment-desc">{s.description}</div>
                             {s.receiver && <div className="shipment-receiver">To: {s.receiver}</div>}
                           </td>
-                          <td><span className="country-chip">{flagFor(s.country)} {s.country}</span></td>
+                          <td><span className="country-chip">{flagFor(s.country)} {s.city ? `${s.city}, ${s.country}` : s.country}</span></td>
                           <td className="weight-cell">{s.weight_kg != null ? `${s.weight_kg} kg` : '—'}</td>
                           <td className="date-cell">{formatDate(s.created_at)}</td>
                           <td className="cost-cell">{formatCost(s.cost_usd)}</td>
@@ -193,7 +193,7 @@ export default function Dashboard() {
                       <div className="scm-body">
                         <div className="scm-desc">{s.description}</div>
                         <div className="scm-meta">
-                          <span>{flagFor(s.country)} {s.country}</span>
+                          <span>{flagFor(s.country)} {s.city ? `${s.city}, ${s.country}` : s.country}</span>
                           <span>{s.weight_kg != null ? `${s.weight_kg} kg` : '—'}</span>
                           <span>{formatCost(s.cost_usd)}</span>
                         </div>

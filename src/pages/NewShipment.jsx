@@ -15,6 +15,7 @@ const INITIAL = {
   receiverName:  '',
   receiverPhone: '',
   country:       '',
+  city:          '',
   address:       '',
   description:   '',
   category:      '',
@@ -97,6 +98,7 @@ export default function NewShipment() {
       description: form.description,
       receiver:    form.receiverName,
       country:     form.country,
+      city:        form.city     || null,
       weight_kg:   form.weight ? parseFloat(form.weight) : null,
       cost_usd:    form.value  ? parseFloat(form.value)  : null,
       status:      'pending',
@@ -240,9 +242,17 @@ export default function NewShipment() {
                       {errors.country && <span className="err-msg">{errors.country}</span>}
                     </div>
                     <div className="form-group">
+                      <label className="form-label">Destination City <span className="optional">(optional)</span></label>
+                      <input type="text" name="city" className="form-input"
+                        placeholder="e.g. Riyadh, Dubai, Kuwait City…"
+                        value={form.city} onChange={handleChange} />
+                    </div>
+                  </div>
+                  <div className="form-grid-2">
+                    <div className="form-group">
                       <label className="form-label">Delivery Address <span className="optional">(optional)</span></label>
                       <input type="text" name="address" className="form-input"
-                        placeholder="City, street, building…"
+                        placeholder="Street, building, apartment…"
                         value={form.address} onChange={handleChange} />
                     </div>
                   </div>
@@ -375,7 +385,7 @@ export default function NewShipment() {
                   </div>
                   <div className="rrb-point">
                     <span className="rrb-flag">{COUNTRY_FLAGS[form.country] || '🌍'}</span>
-                    <span className="rrb-city">{form.country}</span>
+                    <span className="rrb-city">{form.city ? `${form.city}, ${form.country}` : form.country}</span>
                     <span className="rrb-name">{form.receiverName}</span>
                   </div>
                 </div>
@@ -391,7 +401,7 @@ export default function NewShipment() {
                     <div className="review-section-head">📥 Receiver</div>
                     <div className="review-item"><span>Name</span><strong>{form.receiverName}</strong></div>
                     {form.receiverPhone && <div className="review-item"><span>Phone</span><strong>{form.receiverPhone}</strong></div>}
-                    <div className="review-item"><span>Country</span><strong>{form.country}</strong></div>
+                    <div className="review-item"><span>Country</span><strong>{form.city ? `${form.city}, ${form.country}` : form.country}</strong></div>
                     {form.address && <div className="review-item"><span>Address</span><strong>{form.address}</strong></div>}
                   </div>
                   <div className="review-section">
