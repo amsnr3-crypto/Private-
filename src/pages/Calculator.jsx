@@ -55,8 +55,9 @@ export default function Calculator() {
       : null
 
     const chargeLbs = volLbs !== null ? Math.max(actualLbs, volLbs) : actualLbs
-    const tier      = dest.rates.find(t => chargeLbs >= t.min && chargeLbs <= t.max)
+    const tier      = [...dest.rates].sort((a, b) => b.min - a.min).find(t => chargeLbs >= t.min)
     const rate      = tier ? tier.price : dest.ratePerLb
+    console.log('chargeLbs:', chargeLbs, '| tier:', tier, '| rate:', rate)
     const shipping  = r2(chargeLbs * rate)
     const fuel      = r2(shipping * FUEL_SURCHARGE)
     const total     = r2(shipping + fuel + HANDLING_FEE)
