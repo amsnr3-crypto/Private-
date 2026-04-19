@@ -10,8 +10,8 @@ const DESTINATIONS = [
     ratePerLb: 4.50,
     rates: [
       { min: 0,   max: 50,       price: 4.50 },
-      { min: 51,  max: 100,      price: 4.25 },
-      { min: 101, max: Infinity, price: 4.00 },
+      { min: 50,  max: 100,      price: 4.25 },
+      { min: 100, max: Infinity, price: 4.00 },
     ],
   },
   {
@@ -19,16 +19,31 @@ const DESTINATIONS = [
     ratePerLb: 4.75,
     rates: [
       { min: 0,   max: 50,       price: 4.75 },
-      { min: 51,  max: 100,      price: 4.50 },
-      { min: 101, max: Infinity, price: 4.25 },
+      { min: 50,  max: 100,      price: 4.50 },
+      { min: 100, max: Infinity, price: 4.25 },
     ],
   },
 ]
 
-const VOL_DIV_LBS  = 139
-const HANDLING_FEE = 10
+const VOL_DIV_LBS    = 139
+const HANDLING_FEE   = 10
 const FUEL_SURCHARGE = 0.22
 function r2(n) { return Math.round(n * 100) / 100 }
+function calcBlendedShipping(lbs, rates) {
+  const sorted = [...rates].sort((a, b) => a.min - b.min)
+  let total = 0
+  let counted = 0
+  for (let i = 0; i < sorted.length; i++) {
+    if (counted >= lbs) break
+    const bandEnd = i < sorted.length - 1 ? sorted[i + 1].min : Infinity
+    const lbsInBand = Math.min(lbs, bandEnd) - counted
+    if (lbsInBand > 0) {
+      total += lbsInBand * sorted[i].price
+      counted += lbsInBand
+    }
+  }
+  return r2(total)
+}
 function toLbs(val, unit)    { return unit === 'kg' ? val * 2.2046 : val }
 function toInches(val, unit) { return unit === 'cm' ? val / 2.54   : val }
 
@@ -54,15 +69,13 @@ export default function Calculator() {
          toInches(parseFloat(height), dimUnit)) / VOL_DIV_LBS
       : null
 
-    const chargeLbs = volLbs !== null ? Math.max(actualLbs, volLbs) : actualLbs
-    const tier      = [...dest.rates].sort((a, b) => b.min - a.min).find(t => chargeLbs >= t.min)
-    const rate      = tier ? tier.price : dest.ratePerLb
-    console.log('chargeLbs:', chargeLbs, '| tier:', tier, '| rate:', rate)
-    const shipping  = r2(chargeLbs * rate)
+    const chargeLbs   = volLbs !== null ? Math.max(actualLbs, volLbs) : actualLbs
+    const shippingRaw = calcBlendedShipping(chargeLbs, dest.rates)
+    const shipping    = Math.max(shippingRaw, 45)
     const fuel      = r2(shipping * FUEL_SURCHARGE)
     const total     = r2(shipping + fuel + HANDLING_FEE)
 
-    return { actualLbs, volLbs, chargeLbs, rate, shipping, fuel, total }
+    return { actualLbs, volLbs, chargeLbs, shipping, fuel, total }
   }, [country, weight, weightUnit, length, width, height, dimUnit])
 
   const activeDest = DESTINATIONS.find(d => d.code === country)
