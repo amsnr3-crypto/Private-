@@ -5,25 +5,41 @@ import Footer from '../components/Footer'
 import './Calculator.css'
 
 const DESTINATIONS = [
-  { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦', ratePerLb: 4.50 },
-  { code: 'AE', name: 'UAE',          flag: '🇦🇪', ratePerLb: 4.75 },
+  {
+    code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦',
+    ratePerLb: 4.50,
+    rates: [
+      { min: 0,   max: 50,       price: 4.50 },
+      { min: 51,  max: 100,      price: 4.25 },
+      { min: 101, max: Infinity, price: 4.00 },
+    ],
+  },
+  {
+    code: 'AE', name: 'UAE', flag: '🇦🇪',
+    ratePerLb: 4.75,
+    rates: [
+      { min: 0,   max: 50,       price: 4.75 },
+      { min: 51,  max: 100,      price: 4.50 },
+      { min: 101, max: Infinity, price: 4.25 },
+    ],
+  },
 ]
 
-const VOL_DIV_LBS = 139
+const VOL_DIV_LBS  = 139
 const HANDLING_FEE = 10
 const FUEL_SURCHARGE = 0.22
 function r2(n) { return Math.round(n * 100) / 100 }
-function toLbs(val, unit) { return unit === 'kg' ? val * 2.2046 : val }
-function toInches(val, unit) { return unit === 'cm' ? val / 2.54 : val }
+function toLbs(val, unit)    { return unit === 'kg' ? val * 2.2046 : val }
+function toInches(val, unit) { return unit === 'cm' ? val / 2.54   : val }
 
 export default function Calculator() {
-  const [country, setCountry] = useState('')
-  const [weight, setWeight] = useState('')
-  const [length, setLength] = useState('')
-  const [width, setWidth] = useState('')
-  const [height, setHeight] = useState('')
+  const [country,    setCountry]    = useState('')
+  const [weight,     setWeight]     = useState('')
+  const [length,     setLength]     = useState('')
+  const [width,      setWidth]      = useState('')
+  const [height,     setHeight]     = useState('')
   const [weightUnit, setWeightUnit] = useState('lb')
-  const [dimUnit, setDimUnit] = useState('in')
+  const [dimUnit,    setDimUnit]    = useState('in')
 
   const calc = useMemo(() => {
     const dest = DESTINATIONS.find(d => d.code === country)
@@ -34,21 +50,22 @@ export default function Calculator() {
 
     const volLbs = hasVol
       ? (toInches(parseFloat(length), dimUnit) *
-         toInches(parseFloat(width), dimUnit) *
+         toInches(parseFloat(width),  dimUnit) *
          toInches(parseFloat(height), dimUnit)) / VOL_DIV_LBS
       : null
 
     const chargeLbs = volLbs !== null ? Math.max(actualLbs, volLbs) : actualLbs
-    const shipping = r2(chargeLbs * dest.ratePerLb)
-    const fuel  = shipping * FUEL_SURCHARGE
-    const total = r2(shipping + fuel + HANDLING_FEE)
+    const tier      = dest.rates.find(t => chargeLbs >= t.min && chargeLbs <= t.max)
+    const rate      = tier ? tier.price : dest.ratePerLb
+    const shipping  = r2(chargeLbs * rate)
+    const fuel      = r2(shipping * FUEL_SURCHARGE)
+    const total     = r2(shipping + fuel + HANDLING_FEE)
 
-    return { actualLbs, volLbs, chargeLbs, shipping, fuel, total }
+    return { actualLbs, volLbs, chargeLbs, rate, shipping, fuel, total }
   }, [country, weight, weightUnit, length, width, height, dimUnit])
 
-  // Derived display values not returned by useMemo
-  const activeDest  = DESTINATIONS.find(d => d.code === country)
-  const volApplies  = calc && calc.volLbs !== null && calc.volLbs > calc.actualLbs
+  const activeDest = DESTINATIONS.find(d => d.code === country)
+  const volApplies = calc && calc.volLbs !== null && calc.volLbs > calc.actualLbs
 
   const unitToggleStyle = (active) => ({
     padding: '4px 16px', borderRadius: '20px', cursor: 'pointer',
@@ -130,8 +147,8 @@ export default function Calculator() {
                     <div key={label} className="dim-field">
                       <label className="dim-label">{label}</label>
                       <div className="weight-input-wrap">
-                        <input type="number" className="form-input calc-input"
-                          placeholder="0" min="0"
+                        <input type="text" inputMode="decimal" className="form-input calc-input"
+                          placeholder="0"
                           value={val} onChange={e => set(e.target.value)} />
                         <span className="unit-label">{dimUnit}</span>
                       </div>
@@ -199,12 +216,12 @@ export default function Calculator() {
                   <div className="cost-breakdown">
                     <h3>Cost Breakdown</h3>
                     <div className="cb-row">
-                      <span>{r2(calc.chargeLbs)} lbs × ${activeDest?.ratePerLb.toFixed(2)}/lb</span>
+                      <span>Shipping</span>
                       <span>${calc.shipping.toFixed(2)}</span>
                     </div>
                     <div className="cb-row">
                       <span>Fuel surcharge (22%)</span>
-                      <span>${r2(calc.fuel).toFixed(2)}</span>
+                      <span>${calc.fuel.toFixed(2)}</span>
                     </div>
                     <div className="cb-row">
                       <span>Handling fee</span>
@@ -236,26 +253,26 @@ export default function Calculator() {
           {/* ── Rate Table ── */}
           <div className="rate-table-section">
             <h2>Standard Shipping Rates</h2>
-            <p>All rates are per chargeable pound — whichever is greater between actual and volumetric weight. Fuel surcharge (22%) and handling fee ($10) apply per shipment.</p>
+            <p>All rates are per chargeable pound. Fuel surcharge (22%) and handling fee ($10) apply per shipment.</p>
             <div className="rate-table-wrapper">
               <table className="rate-table">
                 <thead>
                   <tr>
                     <th>Country</th>
-                    <th>Rate / lb</th>
-                    <th>Fuel Surcharge</th>
+                    <th>0–50 lbs</th>
+                    <th>51–100 lbs</th>
+                    <th>101+ lbs</th>
                     <th>Est. Transit</th>
-                    <th>Handling Fee</th>
                   </tr>
                 </thead>
                 <tbody>
                   {DESTINATIONS.map(d => (
                     <tr key={d.code} className={country === d.code ? 'rate-row-active' : ''}>
                       <td><span className="country-cell">{d.flag} {d.name}</span></td>
-                      <td><strong>${d.ratePerLb.toFixed(2)}</strong></td>
-                      <td>22%</td>
+                      {d.rates.map((t, i) => (
+                        <td key={i}><strong>${t.price.toFixed(2)}/lb</strong></td>
+                      ))}
                       <td>5–10 business days</td>
-                      <td>$10.00</td>
                     </tr>
                   ))}
                 </tbody>
