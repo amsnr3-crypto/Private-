@@ -4,54 +4,59 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import './Calculator.css'
 
-// ---------------------------------------------------------------------------
-// Rate table — per chargeable lb (update these to match your actual pricing)
-// ---------------------------------------------------------------------------
 const DESTINATIONS = [
-  { code: 'SA', name: 'Saudi Arabia',         flag: '🇸🇦', ratePerLb: 4.50 },
-  { code: 'AE', name: 'United Arab Emirates', flag: '🇦🇪', ratePerLb: 4.75 },
-  { code: 'KW', name: 'Kuwait',               flag: '🇰🇼', ratePerLb: 5.00 },
-  { code: 'QA', name: 'Qatar',                flag: '🇶🇦', ratePerLb: 4.90 },
-  { code: 'BH', name: 'Bahrain',              flag: '🇧🇭', ratePerLb: 5.20 },
-  { code: 'OM', name: 'Oman',                 flag: '🇴🇲', ratePerLb: 5.50 },
+  { code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦', ratePerLb: 4.50 },
+  { code: 'AE', name: 'UAE',          flag: '🇦🇪', ratePerLb: 4.75 },
 ]
 
-const VOLUMETRIC_DIVISOR = 5000   // cm³ per kg (standard air freight)
-const KG_TO_LBS          = 2.2046
-const HANDLING_FEE       = 10.00  // flat USD per shipment
-
+const VOL_DIV_LBS = 139
+const HANDLING_FEE = 10
+const FUEL_SURCHARGE = 0.22
 function r2(n) { return Math.round(n * 100) / 100 }
+function toLbs(val, unit) { return unit === 'kg' ? val * 2.2046 : val }
+function toInches(val, unit) { return unit === 'cm' ? val / 2.54 : val }
 
 export default function Calculator() {
   const [country, setCountry] = useState('')
-  const [weight,  setWeight]  = useState('')
-  const [length,  setLength]  = useState('')
-  const [width,   setWidth]   = useState('')
-  const [height,  setHeight]  = useState('')
+  const [weight, setWeight] = useState('')
+  const [length, setLength] = useState('')
+  const [width, setWidth] = useState('')
+  const [height, setHeight] = useState('')
+  const [weightUnit, setWeightUnit] = useState('lb')
+  const [dimUnit, setDimUnit] = useState('in')
 
-  // ── Live calculation ──────────────────────────────────────────────────
   const calc = useMemo(() => {
-    const dest    = DESTINATIONS.find(d => d.code === country)
-    const actualKg = parseFloat(weight) || 0
-    if (!dest || actualKg <= 0) return null
+    const dest = DESTINATIONS.find(d => d.code === country)
+    const actualLbs = toLbs(parseFloat(weight) || 0, weightUnit)
+    if (!dest || actualLbs <= 0) return null
 
-    const hasVol  = length && width && height
-    const volKg   = hasVol
-      ? (parseFloat(length) * parseFloat(width) * parseFloat(height)) / VOLUMETRIC_DIVISOR
+    const hasVol = length && width && height
+
+    const volLbs = hasVol
+      ? (toInches(parseFloat(length), dimUnit) *
+         toInches(parseFloat(width), dimUnit) *
+         toInches(parseFloat(height), dimUnit)) / VOL_DIV_LBS
       : null
 
-    const chargeKg  = volKg !== null ? Math.max(actualKg, volKg) : actualKg
-    const chargeLbs = chargeKg * KG_TO_LBS
-    const shipping  = r2(chargeLbs * dest.ratePerLb)
-    const total     = r2(shipping + HANDLING_FEE)
-    const volApplies = volKg !== null && volKg > actualKg
+    const chargeLbs = volLbs !== null ? Math.max(actualLbs, volLbs) : actualLbs
+    const shipping = r2(chargeLbs * dest.ratePerLb)
+    const fuel  = shipping * FUEL_SURCHARGE
+    const total = r2(shipping + fuel + HANDLING_FEE)
 
-    return { dest, actualKg, volKg, chargeKg, chargeLbs, shipping, total, volApplies }
-  }, [country, weight, length, width, height])
+    return { actualLbs, volLbs, chargeLbs, shipping, fuel, total }
+  }, [country, weight, weightUnit, length, width, height, dimUnit])
 
-  const volKgPreview = (length && width && height)
-    ? r2((parseFloat(length) * parseFloat(width) * parseFloat(height)) / VOLUMETRIC_DIVISOR)
-    : null
+  // Derived display values not returned by useMemo
+  const activeDest  = DESTINATIONS.find(d => d.code === country)
+  const volApplies  = calc && calc.volLbs !== null && calc.volLbs > calc.actualLbs
+
+  const unitToggleStyle = (active) => ({
+    padding: '4px 16px', borderRadius: '20px', cursor: 'pointer',
+    border: '1.5px solid', fontSize: '13px', fontWeight: 600,
+    borderColor: active ? 'var(--primary)' : 'var(--border)',
+    background:  active ? 'var(--primary)' : '#fff',
+    color:       active ? '#fff' : 'var(--text-secondary)',
+  })
 
   return (
     <div className="page-wrapper">
@@ -73,6 +78,7 @@ export default function Calculator() {
             <div className="calc-panel">
               <h2 className="calc-panel-title">Package Details</h2>
 
+              {/* Destination */}
               <div className="calc-section">
                 <h3>Destination</h3>
                 <div className="country-selector">
@@ -88,24 +94,33 @@ export default function Calculator() {
                 </div>
               </div>
 
+              {/* Weight */}
               <div className="calc-section">
                 <h3>Actual Weight <span className="req">*</span></h3>
-                <div className="weight-input-wrap">
-                  <input type="number" className="form-input calc-input"
-                    placeholder="0.0" min="0" step="0.1"
-                    value={weight} onChange={e => setWeight(e.target.value)} />
-                  <span className="unit-label">kg</span>
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+                  {['lb', 'kg'].map(u => (
+                    <button key={u} onClick={() => setWeightUnit(u)} style={unitToggleStyle(weightUnit === u)}>{u}</button>
+                  ))}
                 </div>
-                {weight && parseFloat(weight) > 0 && (
-                  <div className="unit-hint">= {r2(parseFloat(weight) * KG_TO_LBS)} lbs</div>
-                )}
+                <div className="weight-input-wrap">
+                  <input type="text" inputMode="decimal" className="form-input calc-input"
+                    placeholder="0.0"
+                    value={weight} onChange={e => setWeight(e.target.value)} />
+                  <span className="unit-label">{weightUnit}</span>
+                </div>
               </div>
 
+              {/* Dimensions */}
               <div className="calc-section">
                 <h3>
-                  Dimensions (cm)
+                  Dimensions
                   <span className="optional-tag">Optional — for volumetric weight</span>
                 </h3>
+                <div style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+                  {['in', 'cm'].map(u => (
+                    <button key={u} onClick={() => setDimUnit(u)} style={unitToggleStyle(dimUnit === u)}>{u}</button>
+                  ))}
+                </div>
                 <div className="dim-grid">
                   {[
                     { label: 'Length', val: length, set: setLength },
@@ -118,14 +133,14 @@ export default function Calculator() {
                         <input type="number" className="form-input calc-input"
                           placeholder="0" min="0"
                           value={val} onChange={e => set(e.target.value)} />
-                        <span className="unit-label">cm</span>
+                        <span className="unit-label">{dimUnit}</span>
                       </div>
                     </div>
                   ))}
                 </div>
-                {volKgPreview !== null && (
+                {calc && calc.volLbs !== null && (
                   <div className="dim-preview">
-                    Volumetric weight: <strong>{volKgPreview} kg &nbsp;·&nbsp; {r2(volKgPreview * KG_TO_LBS)} lbs</strong>
+                    Volumetric weight: <strong>{r2(calc.volLbs)} lbs</strong>
                   </div>
                 )}
               </div>
@@ -152,10 +167,10 @@ export default function Calculator() {
               ) : (
                 <div className="result-content fade-up">
                   <div className="result-destination">
-                    <span>{calc.dest.flag}</span>
+                    <span>{activeDest?.flag}</span>
                     <div>
                       <div className="rd-label">Shipping to</div>
-                      <div className="rd-name">{calc.dest.name}</div>
+                      <div className="rd-name">{activeDest?.name}</div>
                     </div>
                     <div className="delivery-badge">✈️ 5–10 days</div>
                   </div>
@@ -164,19 +179,19 @@ export default function Calculator() {
                     <h3>Weight Breakdown</h3>
                     <div className="wb-row">
                       <span>Actual weight</span>
-                      <span>{r2(calc.actualKg)} kg &nbsp;·&nbsp; {r2(calc.actualKg * KG_TO_LBS)} lbs</span>
+                      <span>{r2(calc.actualLbs)} lbs</span>
                     </div>
-                    {calc.volKg !== null && (
-                      <div className={`wb-row ${calc.volApplies ? 'wb-highlight' : ''}`}>
-                        <span>Volumetric weight{calc.volApplies ? ' ★' : ''}</span>
-                        <span>{r2(calc.volKg)} kg &nbsp;·&nbsp; {r2(calc.volKg * KG_TO_LBS)} lbs</span>
+                    {calc.volLbs !== null && (
+                      <div className={`wb-row ${volApplies ? 'wb-highlight' : ''}`}>
+                        <span>Volumetric weight{volApplies ? ' ★' : ''}</span>
+                        <span>{r2(calc.volLbs)} lbs</span>
                       </div>
                     )}
                     <div className="wb-row billable">
                       <span>Chargeable weight</span>
-                      <span><strong>{r2(calc.chargeKg)} kg &nbsp;·&nbsp; {r2(calc.chargeLbs)} lbs</strong></span>
+                      <span><strong>{r2(calc.chargeLbs)} lbs</strong></span>
                     </div>
-                    {calc.volApplies && (
+                    {volApplies && (
                       <div className="wb-note">★ Volumetric weight applies — package is large relative to its weight.</div>
                     )}
                   </div>
@@ -184,8 +199,12 @@ export default function Calculator() {
                   <div className="cost-breakdown">
                     <h3>Cost Breakdown</h3>
                     <div className="cb-row">
-                      <span>{r2(calc.chargeLbs)} lbs × ${calc.dest.ratePerLb.toFixed(2)}/lb</span>
+                      <span>{r2(calc.chargeLbs)} lbs × ${activeDest?.ratePerLb.toFixed(2)}/lb</span>
                       <span>${calc.shipping.toFixed(2)}</span>
+                    </div>
+                    <div className="cb-row">
+                      <span>Fuel surcharge (22%)</span>
+                      <span>${r2(calc.fuel).toFixed(2)}</span>
                     </div>
                     <div className="cb-row">
                       <span>Handling fee</span>
@@ -217,14 +236,14 @@ export default function Calculator() {
           {/* ── Rate Table ── */}
           <div className="rate-table-section">
             <h2>Standard Shipping Rates</h2>
-            <p>All rates are per chargeable pound — whichever is greater between actual and volumetric weight. Handling fee of $10 applies per shipment.</p>
+            <p>All rates are per chargeable pound — whichever is greater between actual and volumetric weight. Fuel surcharge (22%) and handling fee ($10) apply per shipment.</p>
             <div className="rate-table-wrapper">
               <table className="rate-table">
                 <thead>
                   <tr>
                     <th>Country</th>
                     <th>Rate / lb</th>
-                    <th>Rate / kg (approx)</th>
+                    <th>Fuel Surcharge</th>
                     <th>Est. Transit</th>
                     <th>Handling Fee</th>
                   </tr>
@@ -234,7 +253,7 @@ export default function Calculator() {
                     <tr key={d.code} className={country === d.code ? 'rate-row-active' : ''}>
                       <td><span className="country-cell">{d.flag} {d.name}</span></td>
                       <td><strong>${d.ratePerLb.toFixed(2)}</strong></td>
-                      <td>${r2(d.ratePerLb * KG_TO_LBS).toFixed(2)}</td>
+                      <td>22%</td>
                       <td>5–10 business days</td>
                       <td>$10.00</td>
                     </tr>
@@ -244,7 +263,7 @@ export default function Calculator() {
             </div>
             <p className="rate-note">
               All rates are in USD. Chargeable weight = max(actual weight, volumetric weight).
-              Volumetric weight = L × W × H (cm) ÷ 5000.
+              Volumetric weight (lbs) = L × W × H (in) ÷ 139, or L × W × H (cm) ÷ 2268.
               Customs duties and import taxes are the responsibility of the recipient and are not included.
             </p>
           </div>
