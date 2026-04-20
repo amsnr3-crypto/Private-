@@ -83,6 +83,17 @@ function getEstimatedCost(chargeLbs, shipping, riskFlag) {
   const estimatedCost = r2(carrierCost + carrierFuel + PRICING.handling + (riskFlag ? PRICING.risk : 0))
   return { carrierCost, carrierFuel, estimatedCost }
 }
+function getOversizeFlag(length, width, height, dimUnit) {
+  const l = toInches(parseFloat(length) || 0, dimUnit)
+  const w = toInches(parseFloat(width)  || 0, dimUnit)
+  const h = toInches(parseFloat(height) || 0, dimUnit)
+  const sides  = [l, w, h].sort((a, b) => b - a)
+  const longest = sides[0]
+  const girth   = l + 2*w + 2*h
+  if (longest > 40) return true
+  if (girth > 120)  return true
+  return false
+}
 function applyMarginProtection(total, estimatedCost) {
   const minMarginPct   = 0.28
   const minMarginUsd   = 18
@@ -107,13 +118,20 @@ function calculateQuote({ country, weight, weightUnit, length, width, height, di
 
   const chargeLbs   = getChargeableWeight(actualLbs, volLbs)
   const shipping    = getShippingPrice(chargeLbs, dest.rates)
-  const riskFlag    = getRiskFlag({ actualLbs, volLbs, length, width, height })
+  const riskFlag     = getRiskFlag({ actualLbs, volLbs, length, width, height })
+  const oversizeFlag = getOversizeFlag(length, width, height, dimUnit)
   const { fuel, total } = getTotals(shipping, riskFlag)
   const { carrierCost, carrierFuel, estimatedCost } = getEstimatedCost(chargeLbs, shipping, riskFlag)
-  const { protectedTotal, marginAdjusted } = applyMarginProtection(total, estimatedCost)
+
+  let adjustedTotal = total
+  if (oversizeFlag) {
+    adjustedTotal = r2(adjustedTotal + 15)
+  }
+
+  const { protectedTotal, marginAdjusted } = applyMarginProtection(adjustedTotal, estimatedCost)
   const { marginUsd, marginPct } = getMarginMetrics(protectedTotal, estimatedCost)
 
-  return { actualLbs, volLbs, chargeLbs, shipping, fuel, total: protectedTotal, carrierCost, carrierFuel, estimatedCost, marginUsd, marginPct, marginAdjusted }
+  return { actualLbs, volLbs, chargeLbs, shipping, fuel, total: protectedTotal, carrierCost, carrierFuel, estimatedCost, marginUsd, marginPct, marginAdjusted, oversizeFlag }
 }
 
 export default function Calculator() {
