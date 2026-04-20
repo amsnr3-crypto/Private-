@@ -68,8 +68,14 @@ function getRiskFlag({ actualLbs, volLbs, length, width, height }) {
   if (volLbs !== null && actualLbs > 0 && volLbs / actualLbs > 4) return true
   return false
 }
+function getMinimumFloor(chargeLbs) {
+  if (chargeLbs <= 5)  return 95
+  if (chargeLbs <= 10) return 80
+  return 45
+}
 function getShippingPrice(chargeLbs, rates) {
-  return Math.max(calcBlendedShipping(chargeLbs, rates), PRICING.minimum)
+  const minFloor = getMinimumFloor(chargeLbs)
+  return Math.max(calcBlendedShipping(chargeLbs, rates), minFloor)
 }
 function getTotals(shipping, isRisk) {
   const fuel  = r2(shipping * PRICING.fuel)
@@ -82,6 +88,11 @@ function getEstimatedCost(chargeLbs, shipping, riskFlag) {
   const carrierFuel  = r2(carrierCost * PRICING.fuel)
   const estimatedCost = r2(carrierCost + carrierFuel + PRICING.handling + (riskFlag ? PRICING.risk : 0))
   return { carrierCost, carrierFuel, estimatedCost }
+}
+function getDynamicMultiplier(chargeLbs) {
+  if (chargeLbs <= 5)  return 1.7
+  if (chargeLbs <= 20) return 1.5
+  return 1.35
 }
 function getOversizeFlag(length, width, height, dimUnit) {
   const l = toInches(parseFloat(length) || 0, dimUnit)
@@ -129,9 +140,14 @@ function calculateQuote({ country, weight, weightUnit, length, width, height, di
   }
 
   const { protectedTotal, marginAdjusted } = applyMarginProtection(adjustedTotal, estimatedCost)
-  const { marginUsd, marginPct } = getMarginMetrics(protectedTotal, estimatedCost)
+  const multiplier     = getDynamicMultiplier(chargeLbs)
+  const costBasedTotal = r2(estimatedCost * multiplier)
+  const finalTotal     = chargeLbs > 20
+    ? Math.max(costBasedTotal, protectedTotal * 0.75)
+    : Math.max(adjustedTotal, costBasedTotal)
+  const { marginUsd, marginPct } = getMarginMetrics(r2(finalTotal), estimatedCost)
 
-  return { actualLbs, volLbs, chargeLbs, shipping, fuel, total: protectedTotal, carrierCost, carrierFuel, estimatedCost, marginUsd, marginPct, marginAdjusted, oversizeFlag }
+  return { actualLbs, volLbs, chargeLbs, shipping, fuel, total: r2(finalTotal), carrierCost, carrierFuel, estimatedCost, marginUsd, marginPct, marginAdjusted, oversizeFlag }
 }
 
 export default function Calculator() {
