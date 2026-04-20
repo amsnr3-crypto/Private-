@@ -58,6 +58,16 @@ function getVolumetricWeight(length, width, height, dimUnit) {
 function getChargeableWeight(actualLbs, volLbs) {
   return volLbs !== null ? Math.max(actualLbs, volLbs) : actualLbs
 }
+function getRiskFlag({ actualLbs, volLbs, length, width, height }) {
+  const sides = [parseFloat(length) || 0, parseFloat(width) || 0, parseFloat(height) || 0]
+    .sort((a, b) => b - a)
+  const longest       = sides[0]
+  const secondLongest = sides[1]
+  if (longest > 40)       return true
+  if (secondLongest > 24) return true
+  if (volLbs !== null && actualLbs > 0 && volLbs / actualLbs > 4) return true
+  return false
+}
 function getShippingPrice(chargeLbs, rates) {
   return Math.max(calcBlendedShipping(chargeLbs, rates), PRICING.minimum)
 }
@@ -78,7 +88,8 @@ function calculateQuote({ country, weight, weightUnit, length, width, height, di
 
   const chargeLbs   = getChargeableWeight(actualLbs, volLbs)
   const shipping    = getShippingPrice(chargeLbs, dest.rates)
-  const { fuel, total } = getTotals(shipping, isRisk)
+  const riskFlag    = getRiskFlag({ actualLbs, volLbs, length, width, height })
+  const { fuel, total } = getTotals(shipping, riskFlag)
 
   return { actualLbs, volLbs, chargeLbs, shipping, fuel, total }
 }
