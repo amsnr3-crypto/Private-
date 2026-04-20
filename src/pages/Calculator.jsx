@@ -77,7 +77,26 @@ function getTotals(shipping, isRisk) {
   return { fuel, total }
 }
 
-function calculateQuote({ country, weight, weightUnit, length, width, height, dimUnit, isRisk }) {
+function getEstimatedCost(chargeLbs, shipping, riskFlag) {
+  const carrierCost  = r2(chargeLbs * 1.58)
+  const carrierFuel  = r2(carrierCost * PRICING.fuel)
+  const estimatedCost = r2(carrierCost + carrierFuel + PRICING.handling + (riskFlag ? PRICING.risk : 0))
+  return { carrierCost, carrierFuel, estimatedCost }
+}
+function applyMarginProtection(total, estimatedCost) {
+  const minMarginPct   = 0.28
+  const minMarginUsd   = 18
+  const requiredByPct  = r2(estimatedCost / (1 - minMarginPct))
+  const requiredByUsd  = r2(estimatedCost + minMarginUsd)
+  const protectedTotal = r2(Math.max(total, requiredByPct, requiredByUsd))
+  return { protectedTotal, marginAdjusted: protectedTotal > total }
+}
+function getMarginMetrics(total, estimatedCost) {
+  const marginUsd = r2(total - estimatedCost)
+  const marginPct = total > 0 ? r2(marginUsd / total) : 0
+  return { marginUsd, marginPct }
+}
+function calculateQuote({ country, weight, weightUnit, length, width, height, dimUnit }) {
   const dest = DESTINATIONS.find(d => d.code === country)
   const actualLbs = toLbs(parseFloat(weight) || 0, weightUnit)
   if (!dest || actualLbs <= 0) return null
@@ -90,8 +109,11 @@ function calculateQuote({ country, weight, weightUnit, length, width, height, di
   const shipping    = getShippingPrice(chargeLbs, dest.rates)
   const riskFlag    = getRiskFlag({ actualLbs, volLbs, length, width, height })
   const { fuel, total } = getTotals(shipping, riskFlag)
+  const { carrierCost, carrierFuel, estimatedCost } = getEstimatedCost(chargeLbs, shipping, riskFlag)
+  const { protectedTotal, marginAdjusted } = applyMarginProtection(total, estimatedCost)
+  const { marginUsd, marginPct } = getMarginMetrics(protectedTotal, estimatedCost)
 
-  return { actualLbs, volLbs, chargeLbs, shipping, fuel, total }
+  return { actualLbs, volLbs, chargeLbs, shipping, fuel, total: protectedTotal, carrierCost, carrierFuel, estimatedCost, marginUsd, marginPct, marginAdjusted }
 }
 
 export default function Calculator() {
@@ -102,11 +124,9 @@ export default function Calculator() {
   const [height,     setHeight]     = useState('')
   const [weightUnit, setWeightUnit] = useState('lb')
   const [dimUnit,    setDimUnit]    = useState('in')
-  const [isRisk,     setIsRisk]     = useState(false)
-
   const calc = useMemo(
-    () => calculateQuote({ country, weight, weightUnit, length, width, height, dimUnit, isRisk }),
-    [country, weight, weightUnit, length, width, height, dimUnit, isRisk]
+    () => calculateQuote({ country, weight, weightUnit, length, width, height, dimUnit }),
+    [country, weight, weightUnit, length, width, height, dimUnit]
   )
 
   const activeDest = DESTINATIONS.find(d => d.code === country)
