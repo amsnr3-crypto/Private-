@@ -178,13 +178,6 @@ export default function Calculator() {
                 )}
               </div>
 
-              <div className="calc-section">
-                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', cursor: 'pointer', color: 'var(--text-secondary)' }}>
-                  <input type="checkbox" checked={isRisk} onChange={(e) => setIsRisk(e.target.checked)} />
-                  Risk shipment
-                </label>
-              </div>
-
               <p className="calc-disclaimer">
                 Estimates are based on current rates and may vary. Final cost is confirmed after physical weighing at our Houston warehouse.
               </p>
