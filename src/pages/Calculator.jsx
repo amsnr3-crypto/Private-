@@ -26,9 +26,12 @@ const DESTINATIONS = [
 ]
 
 const VOL_DIV_LBS    = 139
-const HANDLING_FEE   = 10
-const FUEL_SURCHARGE = 0.22
-const RISK_FEE       = 30
+const PRICING = {
+  fuel:     0.22,
+  handling: 10,
+  minimum:  45,
+  risk:     30,
+}
 function r2(n) { return Math.round(n * 100) / 100 }
 function calcBlendedShipping(lbs, rates) {
   const sorted = [...rates].sort((a, b) => a.min - b.min)
@@ -73,9 +76,9 @@ export default function Calculator() {
 
     const chargeLbs   = volLbs !== null ? Math.max(actualLbs, volLbs) : actualLbs
     const shippingRaw = calcBlendedShipping(chargeLbs, dest.rates)
-    const shipping    = Math.max(shippingRaw, 45)
-    const fuel        = r2(shipping * FUEL_SURCHARGE)
-    const total       = r2(shipping + fuel + HANDLING_FEE + (isRisk ? RISK_FEE : 0))
+    const shipping    = Math.max(shippingRaw, PRICING.minimum)
+    const fuel        = r2(shipping * PRICING.fuel)
+    const total       = r2(shipping + fuel + PRICING.handling + (isRisk ? PRICING.risk : 0))
 
     return { actualLbs, volLbs, chargeLbs, shipping, fuel, total }
   }, [country, weight, weightUnit, length, width, height, dimUnit, isRisk])
@@ -241,7 +244,7 @@ export default function Calculator() {
                     </div>
                     <div className="cb-row">
                       <span>Handling fee</span>
-                      <span>${HANDLING_FEE.toFixed(2)}</span>
+                      <span>${PRICING.handling.toFixed(2)}</span>
                     </div>
                     <div className="cb-total">
                       <span>Estimated Total</span>
