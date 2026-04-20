@@ -50,6 +50,38 @@ function calcBlendedShipping(lbs, rates) {
 }
 function toLbs(val, unit)    { return unit === 'kg' ? val * 2.2046 : val }
 function toInches(val, unit) { return unit === 'cm' ? val / 2.54   : val }
+function getVolumetricWeight(length, width, height, dimUnit) {
+  return (toInches(parseFloat(length), dimUnit) *
+          toInches(parseFloat(width),  dimUnit) *
+          toInches(parseFloat(height), dimUnit)) / VOL_DIV_LBS
+}
+function getChargeableWeight(actualLbs, volLbs) {
+  return volLbs !== null ? Math.max(actualLbs, volLbs) : actualLbs
+}
+function getShippingPrice(chargeLbs, rates) {
+  return Math.max(calcBlendedShipping(chargeLbs, rates), PRICING.minimum)
+}
+function getTotals(shipping, isRisk) {
+  const fuel  = r2(shipping * PRICING.fuel)
+  const total = r2(shipping + fuel + PRICING.handling + (isRisk ? PRICING.risk : 0))
+  return { fuel, total }
+}
+
+function calculateQuote({ country, weight, weightUnit, length, width, height, dimUnit, isRisk }) {
+  const dest = DESTINATIONS.find(d => d.code === country)
+  const actualLbs = toLbs(parseFloat(weight) || 0, weightUnit)
+  if (!dest || actualLbs <= 0) return null
+
+  const hasVol = length && width && height
+
+  const volLbs = hasVol ? getVolumetricWeight(length, width, height, dimUnit) : null
+
+  const chargeLbs   = getChargeableWeight(actualLbs, volLbs)
+  const shipping    = getShippingPrice(chargeLbs, dest.rates)
+  const { fuel, total } = getTotals(shipping, isRisk)
+
+  return { actualLbs, volLbs, chargeLbs, shipping, fuel, total }
+}
 
 export default function Calculator() {
   const [country,    setCountry]    = useState('')
@@ -61,27 +93,10 @@ export default function Calculator() {
   const [dimUnit,    setDimUnit]    = useState('in')
   const [isRisk,     setIsRisk]     = useState(false)
 
-  const calc = useMemo(() => {
-    const dest = DESTINATIONS.find(d => d.code === country)
-    const actualLbs = toLbs(parseFloat(weight) || 0, weightUnit)
-    if (!dest || actualLbs <= 0) return null
-
-    const hasVol = length && width && height
-
-    const volLbs = hasVol
-      ? (toInches(parseFloat(length), dimUnit) *
-         toInches(parseFloat(width),  dimUnit) *
-         toInches(parseFloat(height), dimUnit)) / VOL_DIV_LBS
-      : null
-
-    const chargeLbs   = volLbs !== null ? Math.max(actualLbs, volLbs) : actualLbs
-    const shippingRaw = calcBlendedShipping(chargeLbs, dest.rates)
-    const shipping    = Math.max(shippingRaw, PRICING.minimum)
-    const fuel        = r2(shipping * PRICING.fuel)
-    const total       = r2(shipping + fuel + PRICING.handling + (isRisk ? PRICING.risk : 0))
-
-    return { actualLbs, volLbs, chargeLbs, shipping, fuel, total }
-  }, [country, weight, weightUnit, length, width, height, dimUnit, isRisk])
+  const calc = useMemo(
+    () => calculateQuote({ country, weight, weightUnit, length, width, height, dimUnit, isRisk }),
+    [country, weight, weightUnit, length, width, height, dimUnit, isRisk]
+  )
 
   const activeDest = DESTINATIONS.find(d => d.code === country)
   const volApplies = calc && calc.volLbs !== null && calc.volLbs > calc.actualLbs
