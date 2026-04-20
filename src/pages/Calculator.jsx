@@ -28,6 +28,7 @@ const DESTINATIONS = [
 const VOL_DIV_LBS    = 139
 const HANDLING_FEE   = 10
 const FUEL_SURCHARGE = 0.22
+const RISK_FEE       = 30
 function r2(n) { return Math.round(n * 100) / 100 }
 function calcBlendedShipping(lbs, rates) {
   const sorted = [...rates].sort((a, b) => a.min - b.min)
@@ -55,6 +56,7 @@ export default function Calculator() {
   const [height,     setHeight]     = useState('')
   const [weightUnit, setWeightUnit] = useState('lb')
   const [dimUnit,    setDimUnit]    = useState('in')
+  const [isRisk,     setIsRisk]     = useState(false)
 
   const calc = useMemo(() => {
     const dest = DESTINATIONS.find(d => d.code === country)
@@ -72,11 +74,11 @@ export default function Calculator() {
     const chargeLbs   = volLbs !== null ? Math.max(actualLbs, volLbs) : actualLbs
     const shippingRaw = calcBlendedShipping(chargeLbs, dest.rates)
     const shipping    = Math.max(shippingRaw, 45)
-    const fuel      = r2(shipping * FUEL_SURCHARGE)
-    const total     = r2(shipping + fuel + HANDLING_FEE)
+    const fuel        = r2(shipping * FUEL_SURCHARGE)
+    const total       = r2(shipping + fuel + HANDLING_FEE + (isRisk ? RISK_FEE : 0))
 
     return { actualLbs, volLbs, chargeLbs, shipping, fuel, total }
-  }, [country, weight, weightUnit, length, width, height, dimUnit])
+  }, [country, weight, weightUnit, length, width, height, dimUnit, isRisk])
 
   const activeDest = DESTINATIONS.find(d => d.code === country)
   const volApplies = calc && calc.volLbs !== null && calc.volLbs > calc.actualLbs
@@ -174,6 +176,13 @@ export default function Calculator() {
                     Volumetric weight: <strong>{r2(calc.volLbs)} lbs</strong>
                   </div>
                 )}
+              </div>
+
+              <div className="calc-section">
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                  <input type="checkbox" checked={isRisk} onChange={(e) => setIsRisk(e.target.checked)} />
+                  Risk shipment
+                </label>
               </div>
 
               <p className="calc-disclaimer">
