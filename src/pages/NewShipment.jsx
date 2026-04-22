@@ -49,23 +49,34 @@ export default function NewShipment() {
   // ── Prefill from calculator router state ──
   const qs = location.state || {}
 
+  // ── Unit conversion helpers ──
   function round1(n) { return Math.round(n * 10) / 10 }
+  function kgToLb(kg)   { return round1(parseFloat(kg)   * 2.2046) }
+  function lbToKg(lb)   { return round1(parseFloat(lb)   / 2.2046) }
+  function cmToIn(cm)   { return round1(parseFloat(cm)   / 2.54)   }
+  function inToCm(inch) { return round1(parseFloat(inch) * 2.54)   }
 
-  // Convert weight: lbs → kg
-  const prefillWeight = qs.actualWeightLbs
-    ? String(round1(qs.actualWeightLbs / 2.2046))
-    : ''
+  // ── Prefill from calculator router state ──
+  // Detect unit system from calculator's dimUnit (default kg/cm unless calculator was in lb/in)
+  const prefillUnit = qs.dimUnit === 'in' ? 'lb' : 'kg'
 
-  // Convert dimensions: calculator stores raw value + dimUnit
-  // Always convert to cm for the NewShipment form
-  function toCm(val, unit) {
+  // Dimensions arrive in whatever unit the calculator used — normalise to prefillUnit
+  function toDimUnit(val, fromUnit, toUnit) {
     const n = parseFloat(val)
     if (!n) return ''
-    return String(round1(unit === 'cm' ? n : n * 2.54))
+    if (fromUnit === toUnit) return String(round1(n))
+    return String(fromUnit === 'in' ? inToCm(n) : cmToIn(n))
   }
-  const prefillLength = toCm(qs.lengthIn, qs.dimUnit)
-  const prefillWidth  = toCm(qs.widthIn,  qs.dimUnit)
-  const prefillHeight = toCm(qs.heightIn, qs.dimUnit)
+
+  const prefillWeight = qs.actualWeightLbs
+    ? String(prefillUnit === 'lb'
+        ? round1(qs.actualWeightLbs)
+        : round1(qs.actualWeightLbs / 2.2046))
+    : ''
+
+  const prefillLength = toDimUnit(qs.lengthIn, qs.dimUnit || 'in', prefillUnit === 'lb' ? 'in' : 'cm')
+  const prefillWidth  = toDimUnit(qs.widthIn,  qs.dimUnit || 'in', prefillUnit === 'lb' ? 'in' : 'cm')
+  const prefillHeight = toDimUnit(qs.heightIn, qs.dimUnit || 'in', prefillUnit === 'lb' ? 'in' : 'cm')
 
   const prefill = {
     country: qs.destinationName || '',
@@ -76,12 +87,33 @@ export default function NewShipment() {
   }
 
   const [form, setForm] = useState({ ...INITIAL, ...prefill })
+  const [unit, setUnit] = useState(prefillUnit)   // 'kg' | 'lb'
   const [step, setStep]               = useState(1)
   const [submitting, setSubmitting]   = useState(false)
   const [submitted, setSubmitted]     = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [trackingId, setTrackingId]   = useState('')
   const [errors, setErrors]           = useState({})
+
+  // ── Unit toggle — convert current values on switch ──
+  function handleUnitToggle(next) {
+    if (next === unit) return
+    setForm(prev => {
+      function conv(val, fn) {
+        const n = parseFloat(val)
+        return n ? String(fn(n)) : ''
+      }
+      const toKg = next === 'kg'
+      return {
+        ...prev,
+        weight: conv(prev.weight, toKg ? lbToKg : kgToLb),
+        length: conv(prev.length, toKg ? inToCm : cmToIn),
+        width:  conv(prev.width,  toKg ? inToCm : cmToIn),
+        height: conv(prev.height, toKg ? inToCm : cmToIn),
+      }
+    })
+    setUnit(next)
+  }
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -330,24 +362,49 @@ export default function NewShipment() {
                   </div>
                 </div>
 
+                {/* ── Unit toggle ── */}
+                <div className="form-section" style={{ paddingBottom: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '13px', color: 'var(--text-muted)', fontWeight: 600 }}>Units:</span>
+                    {[
+                      { val: 'kg', label: 'KG / CM' },
+                      { val: 'lb', label: 'LB / IN' },
+                    ].map(({ val, label }) => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => handleUnitToggle(val)}
+                        style={{
+                          padding: '4px 16px', borderRadius: '20px', cursor: 'pointer',
+                          border: '1.5px solid',
+                          fontSize: '13px', fontWeight: 600,
+                          borderColor: unit === val ? 'var(--primary)' : 'var(--border)',
+                          background:  unit === val ? 'var(--primary)' : '#fff',
+                          color:       unit === val ? '#fff' : 'var(--text-secondary)',
+                        }}
+                      >{label}</button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="form-section">
-                  <div className="form-section-title">📐 Dimensions (cm) — optional</div>
+                  <div className="form-section-title">📐 Dimensions ({unit === 'kg' ? 'cm' : 'in'}) — optional</div>
                   <div className="dimensions-info">
                     💡 Providing dimensions gives you a more accurate estimate. Dimensional weight may apply.
                   </div>
                   <div className="form-grid-3">
                     <div className="form-group">
-                      <label className="form-label">Length (cm)</label>
+                      <label className="form-label">Length ({unit === 'kg' ? 'cm' : 'in'})</label>
                       <input type="number" name="length" className="form-input"
                         placeholder="0" min="0" value={form.length} onChange={handleChange} />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Width (cm)</label>
+                      <label className="form-label">Width ({unit === 'kg' ? 'cm' : 'in'})</label>
                       <input type="number" name="width" className="form-input"
                         placeholder="0" min="0" value={form.width} onChange={handleChange} />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Height (cm)</label>
+                      <label className="form-label">Height ({unit === 'kg' ? 'cm' : 'in'})</label>
                       <input type="number" name="height" className="form-input"
                         placeholder="0" min="0" value={form.height} onChange={handleChange} />
                     </div>
@@ -358,7 +415,7 @@ export default function NewShipment() {
                   <div className="form-section-title">⚖️ Weight & Value</div>
                   <div className="form-grid-2">
                     <div className="form-group">
-                      <label className="form-label">Actual Weight (kg) <span className="req">*</span></label>
+                      <label className="form-label">Actual Weight ({unit === 'kg' ? 'kg' : 'lb'}) <span className="req">*</span></label>
                       <input type="number" name="weight"
                         className={`form-input ${errors.weight ? 'error' : ''}`}
                         placeholder="0.0" min="0" step="0.1"
@@ -439,11 +496,11 @@ export default function NewShipment() {
                     <div className="review-section-head">📦 Package</div>
                     <div className="review-item"><span>Description</span><strong>{form.description}</strong></div>
                     {form.category && <div className="review-item"><span>Category</span><strong>{form.category}</strong></div>}
-                    <div className="review-item"><span>Weight</span><strong>{form.weight} kg</strong></div>
+                    <div className="review-item"><span>Weight</span><strong>{form.weight} {unit === 'kg' ? 'kg' : 'lb'}</strong></div>
                     {form.length && (
                       <div className="review-item">
                         <span>Dimensions</span>
-                        <strong>{form.length} × {form.width} × {form.height} cm</strong>
+                        <strong>{form.length} × {form.width} × {form.height} {unit === 'kg' ? 'cm' : 'in'}</strong>
                       </div>
                     )}
                     {form.value && <div className="review-item"><span>Value</span><strong>${form.value}</strong></div>}
