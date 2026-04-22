@@ -43,15 +43,40 @@ export default function ShipmentsDashboard() {
 
   const STATUSES = ['pending', 'confirmed', 'shipped', 'delivered']
 
+  const CARRIERS = ['', 'DHL', 'FedEx', 'UPS', 'Aramex', 'Other']
+
   async function updateStatus(id, newStatus) {
     const { error } = await supabase
       .from('shipments')
       .update({ status: newStatus })
       .eq('id', id)
-
     if (!error) {
       setShipments(prev =>
         prev.map(s => s.id === id ? { ...s, status: newStatus } : s)
+      )
+    }
+  }
+
+  async function updateCarrier(id, value) {
+    const { error } = await supabase
+      .from('shipments')
+      .update({ carrier: value || null })
+      .eq('id', id)
+    if (!error) {
+      setShipments(prev =>
+        prev.map(s => s.id === id ? { ...s, carrier: value } : s)
+      )
+    }
+  }
+
+  async function updateTrackingNumber(id, value) {
+    const { error } = await supabase
+      .from('shipments')
+      .update({ tracking_number: value || null })
+      .eq('id', id)
+    if (!error) {
+      setShipments(prev =>
+        prev.map(s => s.id === id ? { ...s, tracking_number: value } : s)
       )
     }
   }
@@ -61,7 +86,7 @@ export default function ShipmentsDashboard() {
     async function fetchShipments() {
       const { data, error } = await supabase
         .from('shipments')
-        .select('id, destination_name, actual_weight_lbs, chargeable_weight_lbs, pieces, status, created_at')
+        .select('id, destination_name, actual_weight_lbs, chargeable_weight_lbs, pieces, status, carrier, tracking_number, created_at')
         .order('created_at', { ascending: false })
 
       if (!error && data) setShipments(data)
@@ -70,7 +95,7 @@ export default function ShipmentsDashboard() {
     fetchShipments()
   }, [])
 
-  const COLS = ['Destination', 'Actual (lbs)', 'Chargeable (lbs)', 'Pieces', 'Status', 'Date']
+  const COLS = ['Destination', 'Actual (lbs)', 'Chargeable (lbs)', 'Pieces', 'Status', 'Carrier', 'Tracking Number', 'Date']
 
   return (
     <div className="page-wrapper">
@@ -148,6 +173,34 @@ export default function ShipmentsDashboard() {
                               <option key={st} value={st}>{st}</option>
                             ))}
                           </select>
+                        </td>
+                        <td style={{ padding: '12px 16px' }}>
+                          <select
+                            value={s.carrier || ''}
+                            onChange={e => updateCarrier(s.id, e.target.value)}
+                            style={{
+                              border: '1px solid var(--border)', borderRadius: '6px',
+                              padding: '3px 8px', fontSize: '12px', cursor: 'pointer',
+                              color: 'var(--text-primary)', background: '#fff',
+                            }}
+                          >
+                            {CARRIERS.map(c => (
+                              <option key={c} value={c}>{c || '— select —'}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td style={{ padding: '12px 16px' }}>
+                          <input
+                            type="text"
+                            defaultValue={s.tracking_number || ''}
+                            placeholder="e.g. 1Z999AA10123456784"
+                            onBlur={e => updateTrackingNumber(s.id, e.target.value.trim())}
+                            style={{
+                              border: '1px solid var(--border)', borderRadius: '6px',
+                              padding: '3px 8px', fontSize: '12px', width: '170px',
+                              color: 'var(--text-primary)',
+                            }}
+                          />
                         </td>
                         <td style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: '12px' }}>
                           {formatDate(s.created_at)}
