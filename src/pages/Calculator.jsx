@@ -144,7 +144,7 @@ function getHeavyDiscount(chargeLbs) {
   if (chargeLbs <= 70)  return 1
   if (chargeLbs <= 120) return 0.75
   if (chargeLbs <= 200) return 0.7
-  return 0.7
+  return 0.75
 }
 function calculateQuote({ country, weight, weightUnit, length, width, height, dimUnit, pieces }) {
   const dest = DESTINATIONS.find(d => d.code === country)
