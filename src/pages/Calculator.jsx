@@ -183,6 +183,7 @@ export default function Calculator() {
   )
 
   const activeDest = DESTINATIONS.find(d => d.code === country)
+  const activeDestinations = DESTINATIONS.filter(d => d.enabled)
 
   // ── Quote save (intentional only — triggered by user action) ──
   const quotePayload = calc && activeDest ? {
@@ -248,7 +249,7 @@ export default function Calculator() {
               <div className="calc-section">
                 <h3>Destination</h3>
                 <div className="country-selector">
-                  {DESTINATIONS.map(d => (
+                  {activeDestinations.map(d => (
                     <label key={d.code} className={`country-option ${country === d.code ? 'selected' : ''}`}>
                       <input type="radio" name="country" value={d.code}
                         checked={country === d.code}
@@ -501,7 +502,7 @@ export default function Calculator() {
                   </tr>
                 </thead>
                 <tbody>
-                  {DESTINATIONS.map(d => (
+                  {activeDestinations.map(d => (
                     <tr key={d.code} className={country === d.code ? 'rate-row-active' : ''}>
                       <td><span className="country-cell">{d.flag} {d.name}</span></td>
                       {d.rates.map((t, i) => (

@@ -349,7 +349,7 @@ export default function NewShipment() {
                         className={`form-input ${errors.country ? 'error' : ''}`}
                         value={form.country} onChange={handleChange}>
                         <option value="">Select country</option>
-                        {DESTINATIONS.map(d => (
+                        {DESTINATIONS.filter(d => d.enabled).map(d => (
                           <option key={d.code} value={d.name}>{d.flag} {d.name}</option>
                         ))}
                       </select>
