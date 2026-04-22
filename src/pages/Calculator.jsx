@@ -432,7 +432,7 @@ export default function Calculator() {
                     </Link>
                     {(() => {
                       const lines = [
-                        'Hello, I would like to confirm this shipment quote.',
+                        'Hello, I would like to confirm this shipment quote from Speedy Texas.',
                         '',
                         `Destination: ${activeDest?.name}`,
                         `Actual Weight: ${r2(calc.actualLbs)} lbs`,
