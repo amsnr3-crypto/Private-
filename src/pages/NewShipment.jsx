@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import { DESTINATIONS } from '../data/mockData'
+import { DESTINATIONS, DESTINATION_FLAGS } from '../data/destinations'
 import { supabase } from '../supabaseClient'
 import './NewShipment.css'
 
@@ -32,15 +32,6 @@ const CATEGORIES = [
   'Home & Kitchen', 'Toys & Games', 'Automotive Parts', 'Sports & Outdoors', 'Other',
 ]
 
-const COUNTRY_FLAGS = {
-  'Saudi Arabia':           '🇸🇦',
-  'United Arab Emirates':   '🇦🇪',
-  'Kuwait':                 '🇰🇼',
-  'Qatar':                  '🇶🇦',
-  'Bahrain':                '🇧🇭',
-  'Oman':                   '🇴🇲',
-  'Yemen':                  '🇾🇪',
-}
 
 export default function NewShipment() {
   const navigate  = useNavigate()
@@ -532,7 +523,7 @@ export default function NewShipment() {
                     <div className="rrb-line" />
                   </div>
                   <div className="rrb-point">
-                    <span className="rrb-flag">{COUNTRY_FLAGS[form.country] || '🌍'}</span>
+                    <span className="rrb-flag">{DESTINATION_FLAGS[form.country] || '🌍'}</span>
                     <span className="rrb-city">{form.city ? `${form.city}, ${form.country}` : form.country}</span>
                     <span className="rrb-name">{form.receiverName}</span>
                   </div>

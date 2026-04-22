@@ -3,28 +3,8 @@ import { useState, useMemo, useRef } from 'react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { supabase } from '../supabaseClient'
+import { DESTINATIONS } from '../data/destinations'
 import './Calculator.css'
-
-const DESTINATIONS = [
-  {
-    code: 'SA', name: 'Saudi Arabia', flag: '🇸🇦',
-    ratePerLb: 4.50,
-    rates: [
-      { min: 0,   max: 50,       price: 4.50 },
-      { min: 50,  max: 100,      price: 4.25 },
-      { min: 100, max: Infinity, price: 4.00 },
-    ],
-  },
-  {
-    code: 'AE', name: 'UAE', flag: '🇦🇪',
-    ratePerLb: 4.75,
-    rates: [
-      { min: 0,   max: 50,       price: 4.75 },
-      { min: 50,  max: 100,      price: 4.50 },
-      { min: 100, max: Infinity, price: 4.25 },
-    ],
-  },
-]
 
 const VOL_DIV_LBS    = 139
 const PRICING = {
