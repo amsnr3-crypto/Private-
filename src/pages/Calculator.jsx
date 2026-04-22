@@ -399,6 +399,31 @@ export default function Calculator() {
 
           </div>
 
+          {/* ── Internal Dashboard (Dev Only) ── */}
+          {calc && (
+            <div className="internal-dashboard">
+              <h3>Internal Pricing (Dev Only)</h3>
+
+              <div>Estimated Cost: ${calc.estimatedCost?.toFixed(2)}</div>
+              <div>Final Price: ${calc.total?.toFixed(2)}</div>
+              <div>Margin: ${calc.marginUsd?.toFixed(2)}</div>
+              <div>Margin %: {(calc.marginPct * 100)?.toFixed(1)}%</div>
+
+              <hr />
+
+              <div>Chargeable Weight: {r2(calc.chargeLbs)} lbs</div>
+              <div>Actual Weight: {r2(calc.actualLbs)} lbs</div>
+              {calc.volLbs !== null && <div>Volumetric: {r2(calc.volLbs)} lbs</div>}
+
+              <hr />
+
+              <div>Oversize: {calc.oversizeFlag ? 'Yes' : 'No'}</div>
+              <div>Non-Conveyable Fee: ${calc.nonConvFee?.toFixed(2)}</div>
+              <div>Overweight Fee: ${calc.overweightFee?.toFixed(2)}</div>
+              <div>Piece Fee: ${calc.pieceFee?.toFixed(2)}</div>
+            </div>
+          )}
+
           {/* ── Rate Table ── */}
           <div className="rate-table-section">
             <h2>Standard Shipping Rates</h2>
