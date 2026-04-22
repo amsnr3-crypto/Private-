@@ -460,7 +460,7 @@ export default function Calculator() {
                             <span>💬</span> Confirm via WhatsApp
                           </a>
                           <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)', margin: '-4px 0 0' }}>
-                            A Speedy Texas representative will confirm your shipment details.
+                            A Speedy Texas team member will confirm your shipment shortly.
                           </p>
                         </>
                       )
