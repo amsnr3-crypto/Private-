@@ -216,6 +216,35 @@ export default function NewShipment() {
             <p>Fill in the details below to submit a new shipping request.</p>
           </div>
 
+          {/* ── Quote Summary (from Calculator) ── */}
+          {qs && qs.quotedPrice && (
+            <div className="quote-summary" style={{
+              background: 'var(--primary-light, #eff6ff)',
+              border: '1px solid var(--primary)',
+              borderRadius: 'var(--radius)',
+              padding: '14px 20px',
+              marginBottom: '24px',
+              fontSize: '14px',
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '12px 32px',
+              alignItems: 'center',
+            }}>
+              <div style={{ color: 'var(--text-secondary)' }}>
+                📍 <strong>{qs.destinationName}</strong>
+              </div>
+              <div style={{ color: 'var(--text-secondary)' }}>
+                ⚖️ {Math.round(qs.chargeWeightLbs * 10) / 10} lbs chargeable
+              </div>
+              <div style={{ color: 'var(--text-secondary)' }}>
+                📦 {qs.pieces} {qs.pieces === 1 ? 'piece' : 'pieces'}
+              </div>
+              <div style={{ marginLeft: 'auto', fontWeight: 800, fontSize: '16px', color: 'var(--primary)' }}>
+                Estimated: ${Number(qs.quotedPrice).toFixed(2)}
+              </div>
+            </div>
+          )}
+
           {/* Progress Bar */}
           <div className="progress-bar-container">
             {STEPS.map((label, i) => {
