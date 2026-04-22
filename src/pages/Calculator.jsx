@@ -68,6 +68,12 @@ function getRiskFlag({ actualLbs, volLbs, length, width, height }) {
   if (volLbs !== null && actualLbs > 0 && volLbs / actualLbs > 4) return true
   return false
 }
+function getOverweightFee(actualLbs, chargeLbs) {
+  const billable = Math.max(actualLbs, chargeLbs)
+  if (billable <= 70)  return 0
+  if (billable <= 100) return 45
+  return 85
+}
 function getNonConveyableFee(shipping, length, width, height, dimUnit) {
   const l = toInches(parseFloat(length) || 0, dimUnit)
   const w = toInches(parseFloat(width)  || 0, dimUnit)
@@ -150,14 +156,16 @@ function calculateQuote({ country, weight, weightUnit, length, width, height, di
   const { fuel, total } = getTotals(shipping, riskFlag)
   const { carrierCost, carrierFuel, estimatedCost } = getEstimatedCost(chargeLbs, shipping, riskFlag)
 
-  const pieceFee    = getPieceFee(pieces)
-  const nonConvFee  = getNonConveyableFee(shipping, length, width, height, dimUnit)
+  const pieceFee      = getPieceFee(pieces)
+  const nonConvFee    = getNonConveyableFee(shipping, length, width, height, dimUnit)
+  const overweightFee = getOverweightFee(actualLbs, chargeLbs)
   let adjustedTotal = total
   if (oversizeFlag) {
     adjustedTotal = r2(adjustedTotal + 15)
   }
   adjustedTotal = r2(adjustedTotal + pieceFee)
   adjustedTotal = r2(adjustedTotal + nonConvFee)
+  adjustedTotal = r2(adjustedTotal + overweightFee)
 
   const { protectedTotal, marginAdjusted } = applyMarginProtection(adjustedTotal, estimatedCost)
   const multiplier     = getDynamicMultiplier(chargeLbs)
@@ -167,7 +175,7 @@ function calculateQuote({ country, weight, weightUnit, length, width, height, di
     : Math.max(adjustedTotal, costBasedTotal)
   const { marginUsd, marginPct } = getMarginMetrics(r2(finalTotal), estimatedCost)
 
-  return { actualLbs, volLbs, chargeLbs, shipping, fuel, total: r2(finalTotal), carrierCost, carrierFuel, estimatedCost, marginUsd, marginPct, marginAdjusted, oversizeFlag, pieces, pieceFee, nonConvFee }
+  return { actualLbs, volLbs, chargeLbs, shipping, fuel, total: r2(finalTotal), carrierCost, carrierFuel, estimatedCost, marginUsd, marginPct, marginAdjusted, oversizeFlag, pieces, pieceFee, nonConvFee, overweightFee }
 }
 
 export default function Calculator() {
