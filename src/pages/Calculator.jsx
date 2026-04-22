@@ -140,6 +140,12 @@ function getMarginMetrics(total, estimatedCost) {
   const marginPct = total > 0 ? r2(marginUsd / total) : 0
   return { marginUsd, marginPct }
 }
+function getHeavyDiscount(chargeLbs) {
+  if (chargeLbs <= 70)  return 1
+  if (chargeLbs <= 120) return 0.75
+  if (chargeLbs <= 200) return 0.7
+  return 0.7
+}
 function calculateQuote({ country, weight, weightUnit, length, width, height, dimUnit, pieces }) {
   const dest = DESTINATIONS.find(d => d.code === country)
   const actualLbs = toLbs(parseFloat(weight) || 0, weightUnit)
@@ -170,9 +176,10 @@ function calculateQuote({ country, weight, weightUnit, length, width, height, di
   const { protectedTotal, marginAdjusted } = applyMarginProtection(adjustedTotal, estimatedCost)
   const multiplier     = getDynamicMultiplier(chargeLbs)
   const costBasedTotal = r2(estimatedCost * multiplier)
+  const heavyFactor    = getHeavyDiscount(chargeLbs)
   const finalTotal     =
     chargeLbs > 70
-      ? Math.max(costBasedTotal, adjustedTotal * 0.7)
+      ? Math.max(costBasedTotal, adjustedTotal * heavyFactor)
       : Math.max(adjustedTotal, costBasedTotal)
   const { marginUsd, marginPct } = getMarginMetrics(r2(finalTotal), estimatedCost)
 
