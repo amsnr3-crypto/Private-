@@ -223,8 +223,11 @@ export default function Calculator() {
     created_at:            new Date().toISOString(),
   } : null
 
+  let saving = false
+
   async function saveQuote() {
-    if (!quotePayload) return
+    if (saving || !quotePayload) return
+    saving = true
     try {
       await supabase.from('quotes').insert(quotePayload)
     } catch (_) {
