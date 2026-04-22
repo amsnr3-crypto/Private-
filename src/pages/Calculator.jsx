@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { supabase } from '../supabaseClient'
@@ -223,11 +223,11 @@ export default function Calculator() {
     created_at:            new Date().toISOString(),
   } : null
 
-  let saving = false
+  const savingRef = useRef(false)
 
   async function saveQuote() {
-    if (saving || !quotePayload) return
-    saving = true
+    if (savingRef.current || !quotePayload) return
+    savingRef.current = true
     try {
       await supabase.from('quotes').insert(quotePayload)
     } catch (_) {
@@ -456,7 +456,7 @@ export default function Calculator() {
                           style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}
                           onClick={() => saveQuote()}
                         >
-                          <span>💬</span> Send via WhatsApp
+                          <span>💬</span> Confirm via WhatsApp
                         </a>
                       )
                     })()}
