@@ -336,7 +336,7 @@ export default function Calculator() {
                       <div className="rd-label">Shipping to</div>
                       <div className="rd-name">{activeDest?.name}</div>
                     </div>
-                    <div className="delivery-badge">✈️ 5–7 days</div>
+                    <div className="delivery-badge">✈️ 5–7 business days</div>
                   </div>
 
                   {/* Final price */}
@@ -382,7 +382,7 @@ export default function Calculator() {
                   {/* CTA */}
                   <div className="result-actions">
                     <Link to="/new-shipment" className="btn btn-primary btn-lg">
-                      Ship Now for ${calc.total.toFixed(2)} →
+                      Ship Now →
                     </Link>
                     <Link to="/tracking" className="btn btn-ghost">Track a Package</Link>
                   </div>
@@ -390,7 +390,7 @@ export default function Calculator() {
                   {/* Customer note */}
                   <div className="result-note">
                     <span>ℹ️</span>
-                    Final carrier handling charges may vary for unusual items. Duties, taxes, and customs fees are not included.
+                    Final carrier handling charges may vary for unusual items.
                   </div>
 
                 </div>
