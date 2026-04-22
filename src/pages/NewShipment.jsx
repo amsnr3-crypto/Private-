@@ -139,9 +139,38 @@ export default function NewShipment() {
     return Object.keys(e).length === 0
   }
 
+  const [creating, setCreating]     = useState(false)
+  const [createError, setCreateError] = useState('')
+
   const nextStep = () => {
     if (step === 1 && validate1()) setStep(2)
     if (step === 2 && validate2()) setStep(3)
+  }
+
+  // ── Create Shipment record in Supabase ──
+  async function createShipment() {
+    if (creating) return
+    setCreating(true)
+    setCreateError('')
+
+    // Weight normalised to lbs for storage
+    const weightLbs = form.weight
+      ? unit === 'lb'
+        ? parseFloat(form.weight)
+        : parseFloat(form.weight) * 2.2046
+      : null
+
+    const { error } = await supabase.from('shipments').insert({
+      destination_name:      form.country || qs.destinationName || null,
+      actual_weight_lbs:     weightLbs ? Math.round(weightLbs * 10) / 10 : null,
+      chargeable_weight_lbs: qs.chargeableWeightLbs || null,
+      pieces:                qs.pieces || null,
+      status:                'pending',
+      created_at:            new Date().toISOString(),
+    })
+
+    setCreating(false)
+    if (error) { setCreateError(error.message) }
   }
 
   const handleSubmit = async () => {
@@ -560,6 +589,9 @@ export default function NewShipment() {
                 {submitError && (
                   <div className="form-error-banner">{submitError}</div>
                 )}
+                {createError && (
+                  <div className="form-error-banner">{createError}</div>
+                )}
 
                 <div className="step-actions">
                   <button className="btn btn-ghost" onClick={() => setStep(2)}>← Back</button>
@@ -567,6 +599,9 @@ export default function NewShipment() {
                     {submitting
                       ? <><span className="spinner" /> Submitting…</>
                       : <>🚀 Submit Shipment Request</>}
+                  </button>
+                  <button className="btn btn-ghost" onClick={createShipment} disabled={creating}>
+                    {creating ? <><span className="spinner" /> Creating…</> : <>📦 Create Shipment</>}
                   </button>
                 </div>
               </div>
