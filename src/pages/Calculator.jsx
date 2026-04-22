@@ -68,6 +68,22 @@ function getRiskFlag({ actualLbs, volLbs, length, width, height }) {
   if (volLbs !== null && actualLbs > 0 && volLbs / actualLbs > 4) return true
   return false
 }
+function getNonConveyableFee(shipping, length, width, height, dimUnit) {
+  const l = toInches(parseFloat(length) || 0, dimUnit)
+  const w = toInches(parseFloat(width)  || 0, dimUnit)
+  const h = toInches(parseFloat(height) || 0, dimUnit)
+  const sides = [l, w, h].sort((a, b) => b - a)
+  const longest = sides[0]
+  const isNonConveyable =
+    longest > 47 ||
+    (l * w * h) > 5000
+  if (!isNonConveyable) return 0
+  const percentFee = shipping * 0.08
+  return r2(Math.max(25, percentFee))
+}
+function getPieceFee(pieces) {
+  return Math.max(0, (pieces - 1) * 5)
+}
 function getMinimumFloor(chargeLbs) {
   if (chargeLbs <= 5)  return 95
   if (chargeLbs <= 10) return 80
@@ -118,7 +134,7 @@ function getMarginMetrics(total, estimatedCost) {
   const marginPct = total > 0 ? r2(marginUsd / total) : 0
   return { marginUsd, marginPct }
 }
-function calculateQuote({ country, weight, weightUnit, length, width, height, dimUnit }) {
+function calculateQuote({ country, weight, weightUnit, length, width, height, dimUnit, pieces }) {
   const dest = DESTINATIONS.find(d => d.code === country)
   const actualLbs = toLbs(parseFloat(weight) || 0, weightUnit)
   if (!dest || actualLbs <= 0) return null
@@ -134,10 +150,14 @@ function calculateQuote({ country, weight, weightUnit, length, width, height, di
   const { fuel, total } = getTotals(shipping, riskFlag)
   const { carrierCost, carrierFuel, estimatedCost } = getEstimatedCost(chargeLbs, shipping, riskFlag)
 
+  const pieceFee    = getPieceFee(pieces)
+  const nonConvFee  = getNonConveyableFee(shipping, length, width, height, dimUnit)
   let adjustedTotal = total
   if (oversizeFlag) {
     adjustedTotal = r2(adjustedTotal + 15)
   }
+  adjustedTotal = r2(adjustedTotal + pieceFee)
+  adjustedTotal = r2(adjustedTotal + nonConvFee)
 
   const { protectedTotal, marginAdjusted } = applyMarginProtection(adjustedTotal, estimatedCost)
   const multiplier     = getDynamicMultiplier(chargeLbs)
@@ -147,7 +167,7 @@ function calculateQuote({ country, weight, weightUnit, length, width, height, di
     : Math.max(adjustedTotal, costBasedTotal)
   const { marginUsd, marginPct } = getMarginMetrics(r2(finalTotal), estimatedCost)
 
-  return { actualLbs, volLbs, chargeLbs, shipping, fuel, total: r2(finalTotal), carrierCost, carrierFuel, estimatedCost, marginUsd, marginPct, marginAdjusted, oversizeFlag }
+  return { actualLbs, volLbs, chargeLbs, shipping, fuel, total: r2(finalTotal), carrierCost, carrierFuel, estimatedCost, marginUsd, marginPct, marginAdjusted, oversizeFlag, pieces, pieceFee, nonConvFee }
 }
 
 export default function Calculator() {
@@ -158,9 +178,10 @@ export default function Calculator() {
   const [height,     setHeight]     = useState('')
   const [weightUnit, setWeightUnit] = useState('lb')
   const [dimUnit,    setDimUnit]    = useState('in')
+  const [pieces,     setPieces]     = useState(1)
   const calc = useMemo(
-    () => calculateQuote({ country, weight, weightUnit, length, width, height, dimUnit }),
-    [country, weight, weightUnit, length, width, height, dimUnit]
+    () => calculateQuote({ country, weight, weightUnit, length, width, height, dimUnit, pieces }),
+    [country, weight, weightUnit, length, width, height, dimUnit, pieces]
   )
 
   const activeDest = DESTINATIONS.find(d => d.code === country)
@@ -207,6 +228,15 @@ export default function Calculator() {
                       <span className="country-name">{d.name}</span>
                     </label>
                   ))}
+                </div>
+              </div>
+
+              {/* Pieces */}
+              <div className="calc-section">
+                <h3>Pieces</h3>
+                <div className="weight-input-wrap">
+                  <input type="number" min="1" className="form-input calc-input"
+                    value={pieces} onChange={e => setPieces(Math.max(1, parseInt(e.target.value) || 1))} />
                 </div>
               </div>
 
