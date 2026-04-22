@@ -3,16 +3,22 @@ import { useSearchParams } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { supabase } from '../supabaseClient'
-import { SHIPMENT_STATUSES } from '../data/mockData'
 import './Tracking.css'
 
 const STATUS_STEPS = [
-  { key: 'received',     label: 'Received in Houston', icon: '📦' },
-  { key: 'processing',   label: 'Processing',           icon: '⚙️' },
-  { key: 'in_transit',   label: 'In Transit',           icon: '✈️' },
-  { key: 'out_delivery', label: 'Out for Delivery',     icon: '🚚' },
-  { key: 'delivered',    label: 'Delivered',            icon: '✅' },
+  { key: 'pending',   label: 'Shipment Pending',    icon: '⏳' },
+  { key: 'confirmed', label: 'Confirmed',           icon: '📦' },
+  { key: 'shipped',   label: 'Shipped / In Transit', icon: '✈️' },
+  { key: 'delivered', label: 'Delivered',           icon: '✅' },
 ]
+
+// Maps our 4 real Supabase statuses to stepper position (1-based)
+const STATUS_STEP_MAP = {
+  pending:   1,
+  confirmed: 2,
+  shipped:   3,
+  delivered: 4,
+}
 
 const COUNTRY_FLAGS = {
   'Saudi Arabia':           '🇸🇦',
@@ -61,8 +67,7 @@ export default function Tracking() {
   const [loading, setLoading]   = useState(false)
   const [notFound, setNotFound] = useState(false)
 
-  const statusInfo  = shipment ? (SHIPMENT_STATUSES[shipment.status] || null) : null
-  const currentStep = statusInfo ? statusInfo.step : 0
+  const currentStep = shipment ? (STATUS_STEP_MAP[shipment.status] || 1) : 0
   const isDelivered = shipment?.status === 'delivered'
 
   useEffect(() => {
@@ -78,21 +83,22 @@ export default function Tracking() {
     setNotFound(false)
     setShipment(null)
 
-    const { data, error } = await supabase.rpc('get_shipment_by_tracking_id', {
-      p_tracking_id: trackId,
-    })
+    const { data, error } = await supabase
+      .from('shipments')
+      .select('tracking_number, carrier, destination_name, status, created_at')
+      .eq('tracking_number', trackId)
+      .maybeSingle()
 
     setLoading(false)
 
     if (error) {
-      console.error('RPC error:', error)
+      console.error('Supabase error:', error)
       setNotFound(true)
       return
     }
 
-    const row = Array.isArray(data) ? data[0] : data
-    if (!row) { setNotFound(true); return }
-    setShipment(row)
+    if (!data) { setNotFound(true); return }
+    setShipment(data)
   }
 
   return (
@@ -142,22 +148,19 @@ export default function Tracking() {
               {/* ── Summary Card ── */}
               <div className="tracking-summary-card">
                 <div className="tsm-left">
-                  <div className="tsm-id">{shipment.tracking_id}</div>
-                  <div className="tsm-desc">{shipment.description}</div>
+                  <div className="tsm-id">{shipment.tracking_number}</div>
                   <div className="tsm-route">
                     <span>🇺🇸 Houston, TX, USA</span>
                     <span className="route-arrow">→</span>
-                    <span>{flagFor(shipment.country)} {shipment.city ? `${shipment.city}, ${shipment.country}` : shipment.country}</span>
+                    <span>{flagFor(shipment.destination_name)} {shipment.destination_name || '—'}</span>
                   </div>
                 </div>
                 <div className="tsm-right">
-                  <div className={`big-status-badge badge badge-${statusInfo?.color || 'neutral'}`}>
-                    {statusInfo?.icon} {statusInfo?.label || shipment.status}
+                  <div className="big-status-badge" style={{ textTransform: 'capitalize', fontWeight: 700 }}>
+                    {STATUS_STEPS[currentStep - 1]?.icon} {shipment.status}
                   </div>
                   <div className="tsm-meta">
-                    <span><strong>Receiver:</strong> {shipment.receiver}</span>
-                    <span><strong>Weight:</strong> {shipment.weight_kg != null ? `${shipment.weight_kg} kg` : '—'}</span>
-                    <span><strong>Cost:</strong> {formatCost(shipment.cost_usd)}</span>
+                    {shipment.carrier && <span><strong>Carrier:</strong> {shipment.carrier}</span>}
                     <span><strong>Submitted:</strong> {formatDateTime(shipment.created_at)}</span>
                   </div>
                 </div>
@@ -184,8 +187,8 @@ export default function Tracking() {
                           <div className="est-dashes" />
                         </div>
                         <div className="est-point">
-                          <span className="est-flag">{flagFor(shipment.country)}</span>
-                          <span>{shipment.city ? `${shipment.city}, ${shipment.country}` : shipment.country}</span>
+                          <span className="est-flag">{flagFor(shipment.destination_name)}</span>
+                          <span>{shipment.destination_name || '—'}</span>
                         </div>
                       </div>
                     </div>
