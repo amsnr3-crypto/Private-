@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useState, useMemo } from 'react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
+import { supabase } from '../supabaseClient'
 import './Calculator.css'
 
 const DESTINATIONS = [
@@ -201,6 +202,34 @@ export default function Calculator() {
   )
 
   const activeDest = DESTINATIONS.find(d => d.code === country)
+
+  // ── Quote save (intentional only — triggered by user action) ──
+  const quotePayload = calc && activeDest ? {
+    destination_code:      activeDest.code,
+    destination_name:      activeDest.name,
+    actual_weight_lbs:     calc.actualLbs,
+    volumetric_weight_lbs: calc.volLbs,
+    chargeable_weight_lbs: calc.chargeLbs,
+    pieces:                calc.pieces,
+    final_price_usd:       calc.total,
+    estimated_cost_usd:    calc.estimatedCost,
+    margin_usd:            calc.marginUsd,
+    margin_pct:            calc.marginPct,
+    oversize_flag:         calc.oversizeFlag,
+    non_conv_fee_usd:      calc.nonConvFee,
+    overweight_fee_usd:    calc.overweightFee,
+    piece_fee_usd:         calc.pieceFee,
+    created_at:            new Date().toISOString(),
+  } : null
+
+  async function saveQuote() {
+    if (!quotePayload) return
+    try {
+      await supabase.from('quotes').insert(quotePayload)
+    } catch (_) {
+      // silent
+    }
+  }
   const volApplies = calc && calc.volLbs !== null && calc.volLbs > calc.actualLbs
 
   const unitToggleStyle = (active) => ({
@@ -399,9 +428,14 @@ export default function Calculator() {
                       ].filter(l => l !== null).join('\n')
                       const waUrl = `https://wa.me/?text=${encodeURIComponent(lines)}`
                       return (
-                        <a href={waUrl} target="_blank" rel="noopener noreferrer"
+                        <a
+                          href={waUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="btn btn-ghost"
-                          style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}
+                          onClick={() => saveQuote()}
+                        >
                           <span>💬</span> Send via WhatsApp
                         </a>
                       )
