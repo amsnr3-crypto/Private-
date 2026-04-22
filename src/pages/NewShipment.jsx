@@ -101,7 +101,9 @@ export default function NewShipment() {
     setForm(prev => {
       function conv(val, fn) {
         const n = parseFloat(val)
-        return n ? String(fn(n)) : ''
+        return !isNaN(n)
+          ? String(Math.round(fn(n) * 10) / 10)
+          : ''
       }
       const toKg = next === 'kg'
       return {

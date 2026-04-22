@@ -122,6 +122,7 @@ function getOversizeFlag(length, width, height, dimUnit) {
   const w = toInches(parseFloat(width)  || 0, dimUnit)
   const h = toInches(parseFloat(height) || 0, dimUnit)
   const sides  = [l, w, h].sort((a, b) => b - a)
+  
   const longest = sides[0]
   const girth   = l + 2*w + 2*h
   if (longest > 40) return true
