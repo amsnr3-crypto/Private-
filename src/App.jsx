@@ -8,6 +8,7 @@ import NewShipment from './pages/NewShipment'
 import Tracking from './pages/Tracking'
 import Calculator from './pages/Calculator'
 import ProfitDashboard from './pages/ProfitDashboard'
+import ShipmentsDashboard from './pages/ShipmentsDashboard'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -30,6 +31,9 @@ function App() {
         <Route path="/calculator" element={<Calculator />} />
         <Route path="/dashboard/profit" element={
           <ProtectedRoute><ProfitDashboard /></ProtectedRoute>
+        } />
+        <Route path="/dashboard/shipments" element={
+          <ProtectedRoute><ShipmentsDashboard /></ProtectedRoute>
         } />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="*" element={<Navigate to="/" replace />} />
