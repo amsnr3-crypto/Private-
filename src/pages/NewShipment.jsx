@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { DESTINATIONS } from '../data/mockData'
@@ -43,8 +43,39 @@ const COUNTRY_FLAGS = {
 }
 
 export default function NewShipment() {
-  const navigate = useNavigate()
-  const [form, setForm]               = useState(INITIAL)
+  const navigate  = useNavigate()
+  const location  = useLocation()
+
+  // ── Prefill from calculator router state ──
+  const qs = location.state || {}
+
+  function round1(n) { return Math.round(n * 10) / 10 }
+
+  // Convert weight: lbs → kg
+  const prefillWeight = qs.actualWeightLbs
+    ? String(round1(qs.actualWeightLbs / 2.2046))
+    : ''
+
+  // Convert dimensions: calculator stores raw value + dimUnit
+  // Always convert to cm for the NewShipment form
+  function toCm(val, unit) {
+    const n = parseFloat(val)
+    if (!n) return ''
+    return String(round1(unit === 'cm' ? n : n * 2.54))
+  }
+  const prefillLength = toCm(qs.lengthIn, qs.dimUnit)
+  const prefillWidth  = toCm(qs.widthIn,  qs.dimUnit)
+  const prefillHeight = toCm(qs.heightIn, qs.dimUnit)
+
+  const prefill = {
+    country: qs.destinationName || '',
+    weight:  prefillWeight,
+    length:  prefillLength,
+    width:   prefillWidth,
+    height:  prefillHeight,
+  }
+
+  const [form, setForm] = useState({ ...INITIAL, ...prefill })
   const [step, setStep]               = useState(1)
   const [submitting, setSubmitting]   = useState(false)
   const [submitted, setSubmitted]     = useState(false)

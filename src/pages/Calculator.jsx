@@ -410,7 +410,23 @@ export default function Calculator() {
 
                   {/* CTA */}
                   <div className="result-actions">
-                    <Link to="/new-shipment" className="btn btn-primary btn-lg">
+                    <Link
+                      to="/new-shipment"
+                      state={{
+                        destinationName:  activeDest?.name,
+                        destinationCode:  activeDest?.code,
+                        actualWeightLbs:  calc.actualLbs,
+                        volWeightLbs:     calc.volLbs,
+                        chargeWeightLbs:  calc.chargeLbs,
+                        pieces:           calc.pieces,
+                        quotedPrice:      calc.total,
+                        lengthIn:         length,
+                        widthIn:          width,
+                        heightIn:         height,
+                        dimUnit:          dimUnit,
+                      }}
+                      className="btn btn-primary btn-lg"
+                    >
                       Ship Now →
                     </Link>
                     {(() => {
