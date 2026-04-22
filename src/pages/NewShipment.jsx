@@ -603,6 +603,11 @@ export default function NewShipment() {
                   <button className="btn btn-ghost" onClick={createShipment} disabled={creating}>
                     {creating ? <><span className="spinner" /> Creating…</> : <>📦 Create Shipment</>}
                   </button>
+                  {createError && (
+                    <p style={{ color: '#dc2626', fontSize: '13px', marginTop: '8px' }}>
+                      {createError}
+                    </p>
+                  )}
                 </div>
               </div>
             )}
