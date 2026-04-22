@@ -41,6 +41,21 @@ export default function ShipmentsDashboard() {
   const [shipments, setShipments] = useState([])
   const [loading,   setLoading]   = useState(true)
 
+  const STATUSES = ['pending', 'confirmed', 'shipped', 'delivered']
+
+  async function updateStatus(id, newStatus) {
+    const { error } = await supabase
+      .from('shipments')
+      .update({ status: newStatus })
+      .eq('id', id)
+
+    if (!error) {
+      setShipments(prev =>
+        prev.map(s => s.id === id ? { ...s, status: newStatus } : s)
+      )
+    }
+  }
+
   // ── Fetch shipments, latest first ──
   useEffect(() => {
     async function fetchShipments() {
@@ -115,7 +130,24 @@ export default function ShipmentsDashboard() {
                           {s.pieces ?? '—'}
                         </td>
                         <td style={{ padding: '12px 16px' }}>
-                          <StatusBadge status={s.status} />
+                          <select
+                            value={s.status || 'pending'}
+                            onChange={e => updateStatus(s.id, e.target.value)}
+                            style={{
+                              ...(STATUS_COLORS[(s.status || 'pending').toLowerCase()] || STATUS_COLORS.pending),
+                              border: '1px solid var(--border)',
+                              borderRadius: '6px',
+                              padding: '3px 8px',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              cursor: 'pointer',
+                              textTransform: 'capitalize',
+                            }}
+                          >
+                            {STATUSES.map(st => (
+                              <option key={st} value={st}>{st}</option>
+                            ))}
+                          </select>
                         </td>
                         <td style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: '12px' }}>
                           {formatDate(s.created_at)}
