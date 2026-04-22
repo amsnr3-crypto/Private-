@@ -384,6 +384,28 @@ export default function Calculator() {
                     <Link to="/new-shipment" className="btn btn-primary btn-lg">
                       Ship Now →
                     </Link>
+                    {(() => {
+                      const lines = [
+                        'Hello, I would like to confirm this shipment quote.',
+                        '',
+                        `Destination: ${activeDest?.name}`,
+                        `Actual Weight: ${r2(calc.actualLbs)} lbs`,
+                        calc.volLbs !== null ? `Volumetric Weight: ${r2(calc.volLbs)} lbs` : null,
+                        `Chargeable Weight: ${r2(calc.chargeLbs)} lbs`,
+                        `Pieces: ${calc.pieces}`,
+                        `Quoted Price: $${calc.total.toFixed(2)}`,
+                        '',
+                        'Please confirm the next step.',
+                      ].filter(l => l !== null).join('\n')
+                      const waUrl = `https://wa.me/?text=${encodeURIComponent(lines)}`
+                      return (
+                        <a href={waUrl} target="_blank" rel="noopener noreferrer"
+                          className="btn btn-ghost"
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
+                          <span>💬</span> Send via WhatsApp
+                        </a>
+                      )
+                    })()}
                     <Link to="/tracking" className="btn btn-ghost">Track a Package</Link>
                   </div>
 
