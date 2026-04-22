@@ -328,17 +328,26 @@ export default function Calculator() {
                 </div>
               ) : (
                 <div className="result-content fade-up">
+
+                  {/* Destination header */}
                   <div className="result-destination">
                     <span>{activeDest?.flag}</span>
                     <div>
                       <div className="rd-label">Shipping to</div>
                       <div className="rd-name">{activeDest?.name}</div>
                     </div>
-                    <div className="delivery-badge">✈️ 5–10 days</div>
+                    <div className="delivery-badge">✈️ 5–7 days</div>
                   </div>
 
+                  {/* Final price */}
+                  <div className="cb-total" style={{ margin: '0', borderRadius: '0' }}>
+                    <span>Estimated Shipping Price</span>
+                    <span className="total-amount">${calc.total.toFixed(2)}</span>
+                  </div>
+
+                  {/* Shipment summary */}
                   <div className="weight-breakdown">
-                    <h3>Weight Breakdown</h3>
+                    <h3>Shipment Summary</h3>
                     <div className="wb-row">
                       <span>Actual weight</span>
                       <span>{r2(calc.actualLbs)} lbs</span>
@@ -356,28 +365,21 @@ export default function Calculator() {
                     {volApplies && (
                       <div className="wb-note">★ Volumetric weight applies — package is large relative to its weight.</div>
                     )}
-                  </div>
-
-                  <div className="cost-breakdown">
-                    <h3>Cost Breakdown</h3>
-                    <div className="cb-row">
-                      <span>Shipping</span>
-                      <span>${calc.shipping.toFixed(2)}</span>
+                    <div className="wb-row">
+                      <span>Pieces</span>
+                      <span>{calc.pieces}</span>
                     </div>
-                    <div className="cb-row">
-                      <span>Fuel surcharge (22%)</span>
-                      <span>${calc.fuel.toFixed(2)}</span>
+                    <div className="wb-row">
+                      <span>Destination</span>
+                      <span>{activeDest?.flag} {activeDest?.name}</span>
                     </div>
-                    <div className="cb-row">
-                      <span>Handling fee</span>
-                      <span>${PRICING.handling.toFixed(2)}</span>
-                    </div>
-                    <div className="cb-total">
-                      <span>Estimated Total</span>
-                      <span className="total-amount">${calc.total.toFixed(2)}</span>
+                    <div className="wb-row">
+                      <span>Estimated delivery</span>
+                      <span>5–7 business days</span>
                     </div>
                   </div>
 
+                  {/* CTA */}
                   <div className="result-actions">
                     <Link to="/new-shipment" className="btn btn-primary btn-lg">
                       Ship Now for ${calc.total.toFixed(2)} →
@@ -385,10 +387,12 @@ export default function Calculator() {
                     <Link to="/tracking" className="btn btn-ghost">Track a Package</Link>
                   </div>
 
+                  {/* Customer note */}
                   <div className="result-note">
                     <span>ℹ️</span>
-                    This is an estimate. Duties, taxes, and customs fees are not included and vary by country.
+                    Final carrier handling charges may vary for unusual items. Duties, taxes, and customs fees are not included.
                   </div>
+
                 </div>
               )}
             </div>
