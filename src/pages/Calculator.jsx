@@ -448,16 +448,21 @@ export default function Calculator() {
                       ].filter(l => l !== null).join('\n')
                       const waUrl = `https://wa.me/?text=${encodeURIComponent(lines)}`
                       return (
-                        <a
-                          href={waUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn btn-ghost"
-                          style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}
-                          onClick={() => saveQuote()}
-                        >
-                          <span>💬</span> Confirm via WhatsApp
-                        </a>
+                        <>
+                          <a
+                            href={waUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn btn-ghost"
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}
+                            onClick={() => saveQuote()}
+                          >
+                            <span>💬</span> Confirm via WhatsApp
+                          </a>
+                          <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)', margin: '-4px 0 0' }}>
+                            A Speedy Texas representative will confirm your shipment details.
+                          </p>
+                        </>
                       )
                     })()}
                     <Link to="/tracking" className="btn btn-ghost">Track a Package</Link>
