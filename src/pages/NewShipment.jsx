@@ -217,7 +217,7 @@ export default function NewShipment() {
           </div>
 
           {/* ── Quote Summary (from Calculator) ── */}
-          {qs && qs.quotedPrice && (
+          {qs && qs.finalPriceUsd && (
             <div className="quote-summary" style={{
               background: 'var(--primary-light, #eff6ff)',
               border: '1px solid var(--primary)',
@@ -234,13 +234,13 @@ export default function NewShipment() {
                 📍 <strong>{qs.destinationName}</strong>
               </div>
               <div style={{ color: 'var(--text-secondary)' }}>
-                ⚖️ {Math.round(qs.chargeWeightLbs * 10) / 10} lbs chargeable
+                ⚖️ {Math.round(qs.chargeableWeightLbs * 10) / 10} lbs chargeable
               </div>
               <div style={{ color: 'var(--text-secondary)' }}>
                 📦 {qs.pieces} {qs.pieces === 1 ? 'piece' : 'pieces'}
               </div>
               <div style={{ marginLeft: 'auto', fontWeight: 800, fontSize: '16px', color: 'var(--primary)' }}>
-                Estimated: ${Number(qs.quotedPrice).toFixed(2)}
+                Estimated: ${Number(qs.finalPriceUsd).toFixed(2)}
               </div>
             </div>
           )}
