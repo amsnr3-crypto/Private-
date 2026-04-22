@@ -170,7 +170,10 @@ function calculateQuote({ country, weight, weightUnit, length, width, height, di
   const { protectedTotal, marginAdjusted } = applyMarginProtection(adjustedTotal, estimatedCost)
   const multiplier     = getDynamicMultiplier(chargeLbs)
   const costBasedTotal = r2(estimatedCost * multiplier)
-  const finalTotal     = Math.max(adjustedTotal, costBasedTotal)
+  const finalTotal     =
+    chargeLbs > 70
+      ? Math.max(costBasedTotal, adjustedTotal * 0.7)
+      : Math.max(adjustedTotal, costBasedTotal)
   const { marginUsd, marginPct } = getMarginMetrics(r2(finalTotal), estimatedCost)
 
   return { actualLbs, volLbs, chargeLbs, shipping, fuel, total: r2(finalTotal), carrierCost, carrierFuel, estimatedCost, marginUsd, marginPct, marginAdjusted, oversizeFlag, pieces, pieceFee, nonConvFee, overweightFee }
