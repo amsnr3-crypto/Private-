@@ -177,6 +177,7 @@ export default function Calculator() {
   const [weightUnit, setWeightUnit] = useState('lb')
   const [dimUnit,    setDimUnit]    = useState('in')
   const [pieces,     setPieces]     = useState(1)
+  const [waOpening,  setWaOpening]  = useState(false)
   const calc = useMemo(
     () => calculateQuote({ country, weight, weightUnit, length, width, height, dimUnit, pieces }),
     [country, weight, weightUnit, length, width, height, dimUnit, pieces]
@@ -450,15 +451,37 @@ export default function Calculator() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="btn btn-ghost"
-                            style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}
-                            onClick={() => saveQuote()}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center',
+                              opacity: waOpening ? 0.6 : 1,
+                              pointerEvents: waOpening ? 'none' : 'auto',
+                              transition: 'opacity .2s',
+                            }}
+                            onClick={() => {
+                              saveQuote()
+                              setWaOpening(true)
+                              setTimeout(() => setWaOpening(false), 3000)
+                            }}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ flexShrink: 0 }}>
                               <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
                               <path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.115 1.535 5.845L.057 23.882l6.198-1.448A11.934 11.934 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.002-1.366l-.358-.213-3.722.869.936-3.617-.234-.372A9.818 9.818 0 1112 21.818z"/>
                             </svg>
-                            Send via WhatsApp to confirm your quote
+                            {waOpening ? 'Opening WhatsApp…' : 'Send via WhatsApp to confirm your quote'}
                           </a>
+
+                          {waOpening && (
+                            <div style={{
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                              background: '#F0FDF4', border: '1px solid #BBF7D0',
+                              borderRadius: 'var(--radius-sm)', padding: '10px 14px',
+                              fontSize: '13px', color: '#166534', fontWeight: 500,
+                            }}>
+                              <span className="spinner" style={{ borderColor: 'rgba(22,101,52,.25)', borderTopColor: '#166534' }} />
+                              Opening WhatsApp… please send the message to confirm your quote.
+                            </div>
+                          )}
+
                           <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)', margin: '-4px 0 0' }}>
                             Response usually within minutes · A Speedy Texas team member will reach out shortly.
                           </p>
