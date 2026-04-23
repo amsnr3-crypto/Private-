@@ -62,7 +62,7 @@ function estimatedDelivery(isoDate) {
 
 export default function Tracking() {
   const [searchParams] = useSearchParams()
-  const [input, setInput]       = useState(searchParams.get('id') || '')
+  const [input, setInput]       = useState(searchParams.get('track') || searchParams.get('id') || '')
   const [shipment, setShipment] = useState(null)
   const [loading, setLoading]   = useState(false)
   const [notFound, setNotFound] = useState(false)
@@ -71,8 +71,8 @@ export default function Tracking() {
   const isDelivered = shipment?.status === 'delivered'
 
   useEffect(() => {
-    const id = searchParams.get('id')
-    if (id) handleSearch(id)
+    const track = searchParams.get('track') || searchParams.get('id')
+    if (track) handleSearch(track)
   }, [])
 
   const handleSearch = async (id) => {
