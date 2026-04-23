@@ -359,6 +359,18 @@ export default function Calculator() {
                     <span className="total-amount">${calc.total.toFixed(2)}</span>
                   </div>
 
+                  {/* Trust strip */}
+                  <div className="quote-trust-strip">
+                    <div className="quote-trust-title">
+                      Reliable estimate based on your shipment details
+                    </div>
+                    <div className="quote-trust-points">
+                      <span>✈️ Fast air shipping: 3–7 business days</span>
+                      <span>📦 Door-to-door delivery</span>
+                      <span>✅ Final details confirmed before payment</span>
+                    </div>
+                  </div>
+
                   {/* Shipment summary */}
                   <div className="weight-breakdown">
                     <h3>Shipment Summary</h3>

@@ -324,6 +324,32 @@
   line-height: 1.7;
 }
 
+/* ─── Quote Trust Strip ──────────────────────────────────────────────── */
+.quote-trust-strip {
+  background: #F8FAFF;
+  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+}
+.quote-trust-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.quote-trust-points {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 24px;
+}
+.quote-trust-points span {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
 /* ─── Internal Dashboard (Dev Only) ─────────────────────────────────── */
 .internal-dashboard {
   background: #0F172A;
