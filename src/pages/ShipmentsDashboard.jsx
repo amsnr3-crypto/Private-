@@ -95,7 +95,7 @@ export default function ShipmentsDashboard() {
     fetchShipments()
   }, [])
 
-  const COLS = ['Destination', 'Actual (lbs)', 'Chargeable (lbs)', 'Pieces', 'Status', 'Carrier', 'Tracking Number', 'Date']
+  const COLS = ['Destination', 'Actual (lbs)', 'Chargeable (lbs)', 'Pieces', 'Status', 'Carrier', 'Tracking Number', 'Tracking Link', 'Date']
 
   return (
     <div className="page-wrapper">
@@ -201,6 +201,30 @@ export default function ShipmentsDashboard() {
                               color: 'var(--text-primary)',
                             }}
                           />
+                        </td>
+                        <td style={{ padding: '12px 16px' }}>
+                          {s.tracking_number ? (
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <button
+                                onClick={() => window.open(`/tracking?track=${s.tracking_number}`, '_blank')}
+                                style={{
+                                  padding: '3px 10px', fontSize: '12px', fontWeight: 600,
+                                  border: '1px solid var(--border)', borderRadius: '6px',
+                                  background: '#fff', cursor: 'pointer', color: 'var(--primary)',
+                                }}
+                              >Open</button>
+                              <button
+                                onClick={() => navigator.clipboard.writeText(
+                                  window.location.origin + `/tracking?track=${s.tracking_number}`
+                                )}
+                                style={{
+                                  padding: '3px 10px', fontSize: '12px', fontWeight: 600,
+                                  border: '1px solid var(--border)', borderRadius: '6px',
+                                  background: '#fff', cursor: 'pointer', color: 'var(--text-secondary)',
+                                }}
+                              >Copy</button>
+                            </div>
+                          ) : '—'}
                         </td>
                         <td style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: '12px' }}>
                           {formatDate(s.created_at)}
