@@ -462,6 +462,12 @@ export default function Calculator() {
                           <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)', margin: '-4px 0 0' }}>
                             Response usually within minutes · A Speedy Texas team member will reach out shortly.
                           </p>
+                          <p style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)', margin: '8px 0 0', lineHeight: 1.5 }}>
+                            No commitment. Final price confirmed before payment.
+                          </p>
+                          <p style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)', margin: '2px 0 0', opacity: 0.75 }}>
+                            Secure handling · Trusted carriers · Transparent pricing
+                          </p>
                         </>
                       )
                     })()}
