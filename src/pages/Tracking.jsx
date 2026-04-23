@@ -70,6 +70,13 @@ export default function Tracking() {
   const currentStep = shipment ? (STATUS_STEP_MAP[shipment.status] || 1) : 0
   const isDelivered = shipment?.status === 'delivered'
 
+  const STATUS_BADGE_CLASS = {
+    pending:   'badge badge-warning',
+    confirmed: 'badge badge-info',
+    shipped:   'badge badge-info',
+    delivered: 'badge badge-success',
+  }
+
   useEffect(() => {
     const track = searchParams.get('track') || searchParams.get('id')
     if (track) handleSearch(track)
@@ -156,9 +163,10 @@ export default function Tracking() {
                   </div>
                 </div>
                 <div className="tsm-right">
-                  <div className="big-status-badge" style={{ textTransform: 'capitalize', fontWeight: 700 }}>
+                  <span className={`big-status-badge ${STATUS_BADGE_CLASS[shipment.status] || 'badge badge-neutral'}`}
+                    style={{ textTransform: 'capitalize' }}>
                     {STATUS_STEPS[currentStep - 1]?.icon} {shipment.status}
-                  </div>
+                  </span>
                   <div className="tsm-meta">
                     {shipment.carrier && <span><strong>Carrier:</strong> {shipment.carrier}</span>}
                     <span><strong>Submitted:</strong> {formatDateTime(shipment.created_at)}</span>

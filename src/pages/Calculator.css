@@ -69,7 +69,7 @@
 /* ─── Country Selector ──────────────────────────────────────────────── */
 .country-selector {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(138px, 1fr));
   gap: 10px;
 }
 
@@ -324,10 +324,38 @@
   line-height: 1.7;
 }
 
+/* ─── Internal Dashboard (Dev Only) ─────────────────────────────────── */
+.internal-dashboard {
+  background: #0F172A;
+  color: #94A3B8;
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  font-family: 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 12.5px;
+  margin-top: 32px;
+  line-height: 1.9;
+}
+.internal-dashboard h3 {
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #64748B;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.internal-dashboard hr {
+  border: none;
+  border-top: 1px solid rgba(255,255,255,.07);
+  margin: 6px 0;
+}
+.internal-dashboard div { color: #94A3B8; }
+
 /* ─── Responsive ─────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .calc-layout { grid-template-columns: 1fr; }
-  .country-selector { grid-template-columns: 1fr 1fr 1fr; }
 }
 @media (max-width: 540px) {
   .calc-panel { padding: 24px 20px; }

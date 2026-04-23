@@ -86,7 +86,7 @@ export default function ProfitDashboard() {
                 <div style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.06em', color: 'var(--text-muted)', marginBottom: '8px' }}>
                   {s.label}
                 </div>
-                <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--primary)' }}>
+                <div style={{ fontSize: '24px', fontWeight: 900, color: 'var(--accent)' }}>
                   {s.value}
                 </div>
               </div>

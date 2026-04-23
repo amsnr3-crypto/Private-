@@ -17,10 +17,10 @@ function fmt1(val) {
 }
 
 const STATUS_COLORS = {
-  pending:   { bg: '#fef9c3', color: '#854d0e' },
-  confirmed: { bg: '#dcfce7', color: '#166534' },
-  shipped:   { bg: '#dbeafe', color: '#1e40af' },
-  delivered: { bg: '#f3f4f6', color: '#374151' },
+  pending:   { background: '#fef9c3', color: '#854d0e' },
+  confirmed: { background: '#dcfce7', color: '#166534' },
+  shipped:   { background: '#dbeafe', color: '#1e40af' },
+  delivered: { background: '#f3f4f6', color: '#374151' },
 }
 
 function StatusBadge({ status }) {

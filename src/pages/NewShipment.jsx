@@ -239,8 +239,9 @@ export default function NewShipment() {
           {/* ── Quote Summary (from Calculator) ── */}
           {qs && qs.finalPriceUsd && (
             <div className="quote-summary" style={{
-              background: 'var(--primary-light, #eff6ff)',
-              border: '1px solid var(--primary)',
+              background: '#EEF3FF',
+              border: '1px solid #C7D7FC',
+              borderLeft: '4px solid var(--primary)',
               borderRadius: 'var(--radius)',
               padding: '14px 20px',
               marginBottom: '24px',
@@ -259,8 +260,9 @@ export default function NewShipment() {
               <div style={{ color: 'var(--text-secondary)' }}>
                 📦 {qs.pieces} {qs.pieces === 1 ? 'piece' : 'pieces'}
               </div>
-              <div style={{ marginLeft: 'auto', fontWeight: 800, fontSize: '16px', color: 'var(--primary)' }}>
-                Estimated: ${Number(qs.finalPriceUsd).toFixed(2)}
+              <div style={{ marginLeft: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '1px' }}>
+                <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '.07em', color: 'var(--text-muted)' }}>Your Quote</span>
+                <span style={{ fontWeight: 900, fontSize: '18px', color: 'var(--accent)' }}>${Number(qs.finalPriceUsd).toFixed(2)}</span>
               </div>
             </div>
           )}
