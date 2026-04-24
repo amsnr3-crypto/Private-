@@ -486,6 +486,7 @@ export default function Calculator() {
                       const lines = [
                         'Hello, I would like to confirm this shipment quote from Speedy Texas.',
                         '',
+                        `Shipment type: ${shipmentType === 'business' ? 'Business / commercial' : 'Personal'}`,
                         `Destination: ${activeDest?.name}`,
                         `Actual Weight: ${r2(calc.actualLbs)} lbs`,
                         calc.volLbs !== null ? `Volumetric Weight: ${r2(calc.volLbs)} lbs` : null,
