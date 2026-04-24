@@ -180,6 +180,7 @@ export default function Calculator() {
   const [waOpening,     setWaOpening]     = useState(false)
   const [shipmentType,      setShipmentType]      = useState('')
   const [shipmentReadiness, setShipmentReadiness] = useState('')
+  const [shipmentSize,     setShipmentSize]      = useState('')
   const calc = useMemo(
     () => calculateQuote({ country, weight, weightUnit, length, width, height, dimUnit, pieces }),
     [country, weight, weightUnit, length, width, height, dimUnit, pieces]
@@ -499,6 +500,36 @@ export default function Calculator() {
                       )}
                     </div>
 
+                    {/* ── Shipment Size (optional) ── */}
+                    <div style={{ marginBottom: '16px' }}>
+                      <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '10px' }}>
+                        Approximate shipment size <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: '12px' }}>(optional)</span>
+                      </p>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {[
+                          { value: 'Small (under 20 lb)',  label: 'Small (under 20 lb)' },
+                          { value: 'Medium (20–100 lb)',   label: 'Medium (20–100 lb)' },
+                          { value: 'Large (100+ lb)',      label: 'Large (100+ lb)' },
+                        ].map(opt => (
+                          <label key={opt.value} style={{
+                            display: 'flex', alignItems: 'center', gap: '8px',
+                            fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)',
+                            cursor: 'pointer',
+                          }}>
+                            <input
+                              type="radio"
+                              name="shipmentSize"
+                              value={opt.value}
+                              checked={shipmentSize === opt.value}
+                              onChange={e => setShipmentSize(e.target.value)}
+                              style={{ accentColor: 'var(--primary)', width: '15px', height: '15px', cursor: 'pointer' }}
+                            />
+                            {opt.label}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
                     <Link
                       to="/new-shipment"
                       state={{
@@ -524,6 +555,7 @@ export default function Calculator() {
                         '',
                         `Shipment type: ${shipmentType === 'business' ? 'Business / commercial' : 'Personal'}`,
                         `Shipment readiness: ${shipmentReadiness}`,
+                        shipmentSize ? `Shipment size: ${shipmentSize}` : null,
                         `Destination: ${activeDest?.name}`,
                         `Actual Weight: ${r2(calc.actualLbs)} lbs`,
                         calc.volLbs !== null ? `Volumetric Weight: ${r2(calc.volLbs)} lbs` : null,
