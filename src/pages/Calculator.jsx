@@ -359,6 +359,11 @@ export default function Calculator() {
                     <span>Estimated Shipping Price</span>
                     <span className="total-amount">${calc.total.toFixed(2)}</span>
                   </div>
+                  <div style={{ padding: '5px 20px 0', background: 'var(--primary)', textAlign: 'right' }}>
+                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,.65)', fontWeight: 600, letterSpacing: '.01em' }}>
+                      All-inclusive estimate — no hidden fees
+                    </span>
+                  </div>
                   <div style={{ padding: '8px 20px 10px', background: 'rgba(255,255,255,.05)', borderBottom: '1px solid rgba(255,255,255,.09)' }}>
                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                       <span style={{ fontSize: '11px', color: 'rgba(255,255,255,.6)', fontWeight: 500 }}>
