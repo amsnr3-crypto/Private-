@@ -501,8 +501,9 @@ export default function Calculator() {
                             </div>
                           )}
 
-                          <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)', margin: '-4px 0 0' }}>
-                            Response usually within minutes · A Speedy Texas team member will reach out shortly.
+                          <p style={{ textAlign: 'center', fontSize: '12px', color: 'var(--text-muted)', margin: '-4px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                            <span className="wa-live-dot" />
+                            Instant response via WhatsApp · Our team typically replies within minutes
                           </p>
                           <p style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)', margin: '8px 0 0', lineHeight: 1.5 }}>
                             No commitment. Final price confirmed before payment.
