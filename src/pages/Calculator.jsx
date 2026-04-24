@@ -522,6 +522,12 @@ export default function Calculator() {
                     Final carrier handling charges may vary for unusual items.
                   </div>
 
+                  {/* Social proof */}
+                  <div style={{ textAlign: 'center', padding: '10px 20px 14px', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500 }}>
+                    <span style={{ color: 'var(--success)', marginRight: '5px' }}>✓</span>
+                    Trusted by customers shipping weekly from the U.S. to the Gulf
+                  </div>
+
                 </div>
               )}
             </div>
