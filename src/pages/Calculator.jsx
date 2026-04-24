@@ -178,7 +178,8 @@ export default function Calculator() {
   const [dimUnit,    setDimUnit]    = useState('in')
   const [pieces,     setPieces]     = useState(1)
   const [waOpening,     setWaOpening]     = useState(false)
-  const [shipmentType,  setShipmentType]  = useState('')
+  const [shipmentType,      setShipmentType]      = useState('')
+  const [shipmentReadiness, setShipmentReadiness] = useState('')
   const calc = useMemo(
     () => calculateQuote({ country, weight, weightUnit, length, width, height, dimUnit, pieces }),
     [country, weight, weightUnit, length, width, height, dimUnit, pieces]
@@ -463,6 +464,41 @@ export default function Calculator() {
                       )}
                     </div>
 
+                    {/* Shipment readiness selector */}
+                    <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: '14px', marginBottom: '2px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: '10px' }}>
+                        When is your shipment ready?
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {[
+                          { value: 'Ready now',          label: 'Ready now' },
+                          { value: 'Within 2–3 days',    label: 'Within 2–3 days' },
+                          { value: 'Just exploring',     label: 'Just exploring' },
+                        ].map(opt => (
+                          <label key={opt.value} style={{
+                            display: 'flex', alignItems: 'center', gap: '8px',
+                            fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)',
+                            cursor: 'pointer',
+                          }}>
+                            <input
+                              type="radio"
+                              name="shipmentReadiness"
+                              value={opt.value}
+                              checked={shipmentReadiness === opt.value}
+                              onChange={e => setShipmentReadiness(e.target.value)}
+                              style={{ accentColor: 'var(--primary)', width: '15px', height: '15px', cursor: 'pointer' }}
+                            />
+                            {opt.label}
+                          </label>
+                        ))}
+                      </div>
+                      {!shipmentReadiness && (
+                        <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px', fontStyle: 'italic' }}>
+                          Please select shipment timing
+                        </p>
+                      )}
+                    </div>
+
                     <Link
                       to="/new-shipment"
                       state={{
@@ -487,6 +523,7 @@ export default function Calculator() {
                         'Hello, I would like to confirm this shipment quote from Speedy Texas.',
                         '',
                         `Shipment type: ${shipmentType === 'business' ? 'Business / commercial' : 'Personal'}`,
+                        `Shipment readiness: ${shipmentReadiness}`,
                         `Destination: ${activeDest?.name}`,
                         `Actual Weight: ${r2(calc.actualLbs)} lbs`,
                         calc.volLbs !== null ? `Volumetric Weight: ${r2(calc.volLbs)} lbs` : null,
@@ -509,8 +546,8 @@ export default function Calculator() {
                             className="btn btn-ghost"
                             style={{
                               display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center',
-                              opacity: (waOpening || !shipmentType) ? 0.5 : 1,
-                              pointerEvents: (waOpening || !shipmentType) ? 'none' : 'auto',
+                              opacity: (waOpening || !shipmentType || !shipmentReadiness) ? 0.5 : 1,
+                              pointerEvents: (waOpening || !shipmentType || !shipmentReadiness) ? 'none' : 'auto',
                               transition: 'opacity .2s',
                             }}
                             onClick={() => {
