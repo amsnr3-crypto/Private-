@@ -584,6 +584,13 @@ export default function Calculator() {
                             }}
                             onClick={() => {
                               saveQuote()
+                              console.log('WA_CLICK', {
+                                shipmentType,
+                                shipmentReadiness,
+                                shipmentSize,
+                                chargeableWeight: calc.chargeLbs,
+                                timestamp: Date.now(),
+                              })
                               setWaOpening(true)
                               setTimeout(() => setWaOpening(false), 3000)
                             }}
@@ -619,7 +626,16 @@ export default function Calculator() {
                           </p>
                           <div style={{ textAlign: 'center', marginTop: '10px' }}>
                             <button
-                              onClick={() => saveQuote()}
+                              onClick={() => {
+                                saveQuote()
+                                console.log('SAVE_QUOTE', {
+                                  shipmentType,
+                                  shipmentReadiness,
+                                  shipmentSize,
+                                  chargeableWeight: calc.chargeLbs,
+                                  timestamp: Date.now(),
+                                })
+                              }}
                               style={{
                                 background: 'none', border: 'none', padding: '0',
                                 fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500,
