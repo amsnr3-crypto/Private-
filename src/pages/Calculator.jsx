@@ -359,6 +359,11 @@ export default function Calculator() {
                     <span>Estimated Shipping Price</span>
                     <span className="total-amount">${calc.total.toFixed(2)}</span>
                   </div>
+                  <div style={{ padding: '6px 20px', background: 'rgba(255,255,255,.06)', textAlign: 'right', borderBottom: '1px solid rgba(255,255,255,.08)' }}>
+                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,.55)', fontWeight: 500 }}>
+                      Charged weight: {r2(calc.chargeLbs)} lb
+                    </span>
+                  </div>
 
                   {/* Trust strip */}
                   <div className="quote-trust-strip">
