@@ -327,27 +327,36 @@
 /* ─── Quote Trust Strip ──────────────────────────────────────────────── */
 .quote-trust-strip {
   background: #F8FAFF;
+  border-top: 1px solid #E8EDF8;
   border-bottom: 1px solid var(--border);
-  padding: 12px 20px;
+  padding: 10px 20px;
 }
 .quote-trust-title {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .06em;
   color: var(--text-muted);
-  margin-bottom: 8px;
+  margin-bottom: 7px;
 }
 .quote-trust-points {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 24px;
+  gap: 5px 20px;
 }
 .quote-trust-points span {
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--text-secondary);
   font-weight: 500;
   white-space: nowrap;
+  flex: 0 0 auto;
+}
+@media (max-width: 480px) {
+  .quote-trust-points {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .quote-trust-points span { white-space: normal; }
 }
 
 /* ─── Internal Dashboard (Dev Only) ─────────────────────────────────── */

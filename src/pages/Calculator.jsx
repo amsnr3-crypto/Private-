@@ -359,10 +359,19 @@ export default function Calculator() {
                     <span>Estimated Shipping Price</span>
                     <span className="total-amount">${calc.total.toFixed(2)}</span>
                   </div>
-                  <div style={{ padding: '6px 20px', background: 'rgba(255,255,255,.06)', textAlign: 'right', borderBottom: '1px solid rgba(255,255,255,.08)' }}>
-                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,.55)', fontWeight: 500 }}>
-                      Charged weight: {r2(calc.chargeLbs)} lb
-                    </span>
+                  <div style={{ padding: '8px 20px 10px', background: 'rgba(255,255,255,.05)', borderBottom: '1px solid rgba(255,255,255,.09)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,.6)', fontWeight: 500 }}>
+                        Charged weight: {r2(calc.chargeLbs)} lb
+                        {' '}
+                        <span style={{ opacity: 0.75 }}>
+                          ({calc.volLbs !== null && calc.volLbs > calc.actualLbs ? 'based on size' : 'based on actual weight'})
+                        </span>
+                      </span>
+                    </div>
+                    <div style={{ textAlign: 'right', marginTop: '3px', fontSize: '10px', color: 'rgba(255,255,255,.38)', fontStyle: 'italic' }}>
+                      Shipping uses the higher of actual or volumetric weight
+                    </div>
                   </div>
 
                   {/* Trust strip */}
