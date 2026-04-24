@@ -177,7 +177,8 @@ export default function Calculator() {
   const [weightUnit, setWeightUnit] = useState('lb')
   const [dimUnit,    setDimUnit]    = useState('in')
   const [pieces,     setPieces]     = useState(1)
-  const [waOpening,  setWaOpening]  = useState(false)
+  const [waOpening,     setWaOpening]     = useState(false)
+  const [shipmentType,  setShipmentType]  = useState('')
   const calc = useMemo(
     () => calculateQuote({ country, weight, weightUnit, length, width, height, dimUnit, pieces }),
     [country, weight, weightUnit, length, width, height, dimUnit, pieces]
@@ -427,6 +428,41 @@ export default function Calculator() {
 
                   {/* CTA */}
                   <div className="result-actions">
+
+                    {/* Shipment type selector */}
+                    <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: '14px', marginBottom: '2px' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: '10px' }}>
+                        Shipment type
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {[
+                          { value: 'personal',  label: 'Personal shipment' },
+                          { value: 'business',  label: 'Business / commercial shipment' },
+                        ].map(opt => (
+                          <label key={opt.value} style={{
+                            display: 'flex', alignItems: 'center', gap: '8px',
+                            fontSize: '14px', fontWeight: 500, color: 'var(--text-primary)',
+                            cursor: 'pointer',
+                          }}>
+                            <input
+                              type="radio"
+                              name="shipmentType"
+                              value={opt.value}
+                              checked={shipmentType === opt.value}
+                              onChange={e => setShipmentType(e.target.value)}
+                              style={{ accentColor: 'var(--primary)', width: '15px', height: '15px', cursor: 'pointer' }}
+                            />
+                            {opt.label}
+                          </label>
+                        ))}
+                      </div>
+                      {!shipmentType && (
+                        <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px', fontStyle: 'italic' }}>
+                          Please select shipment type to continue
+                        </p>
+                      )}
+                    </div>
+
                     <Link
                       to="/new-shipment"
                       state={{
@@ -472,8 +508,8 @@ export default function Calculator() {
                             className="btn btn-ghost"
                             style={{
                               display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center',
-                              opacity: waOpening ? 0.6 : 1,
-                              pointerEvents: waOpening ? 'none' : 'auto',
+                              opacity: (waOpening || !shipmentType) ? 0.5 : 1,
+                              pointerEvents: (waOpening || !shipmentType) ? 'none' : 'auto',
                               transition: 'opacity .2s',
                             }}
                             onClick={() => {
