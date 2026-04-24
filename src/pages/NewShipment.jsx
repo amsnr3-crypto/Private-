@@ -487,9 +487,9 @@ export default function NewShipment() {
                 <div className="form-section">
                   <div className="form-section-title">🗒 Additional Notes</div>
                   <div className="form-group">
-                    <label className="form-label">Notes for our team <span className="optional">(optional)</span></label>
+                    <label className="form-label">Add special instructions for your shipment <span className="optional">(optional)</span></label>
                     <textarea name="notes" className="form-input" rows={3}
-                      placeholder="Special handling, fragile items, urgent delivery…"
+                      placeholder="e.g. fragile items, preferred delivery time, special handling"
                       value={form.notes} onChange={handleChange} />
                   </div>
                 </div>
