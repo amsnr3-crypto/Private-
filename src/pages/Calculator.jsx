@@ -651,6 +651,11 @@ export default function Calculator() {
                     Trusted by customers shipping weekly from the U.S. to the Gulf
                   </div>
 
+                  {/* Human reassurance */}
+                  <div style={{ textAlign: 'center', padding: '0 24px 18px', fontSize: '11px', color: 'var(--text-muted)', lineHeight: 1.6, marginTop: '2px' }}>
+                    A real team member will review your shipment details before confirming the final cost.
+                  </div>
+
                 </div>
               )}
             </div>
