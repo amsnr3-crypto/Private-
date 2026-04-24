@@ -14,6 +14,11 @@ const PRICING = {
   risk:     30,
 }
 function r2(n) { return Math.round(n * 100) / 100 }
+function getLeadQuality(readiness, chargeLbs) {
+  if (readiness === 'Ready now' && chargeLbs >= 50) return 'high'
+  if (readiness !== ''         && chargeLbs >= 20) return 'medium'
+  return 'low'
+}
 function calcBlendedShipping(lbs, rates) {
   const sorted = [...rates].sort((a, b) => a.min - b.min)
   let total = 0
@@ -589,6 +594,7 @@ export default function Calculator() {
                                 shipmentReadiness,
                                 shipmentSize,
                                 chargeableWeight: calc.chargeLbs,
+                                leadQuality: getLeadQuality(shipmentReadiness, calc.chargeLbs),
                                 timestamp: Date.now(),
                               })
                               setWaOpening(true)
@@ -633,6 +639,7 @@ export default function Calculator() {
                                   shipmentReadiness,
                                   shipmentSize,
                                   chargeableWeight: calc.chargeLbs,
+                                  leadQuality: getLeadQuality(shipmentReadiness, calc.chargeLbs),
                                   timestamp: Date.now(),
                                 })
                               }}
