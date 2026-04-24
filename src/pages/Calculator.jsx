@@ -19,6 +19,33 @@ function getLeadQuality(readiness, chargeLbs) {
   if (readiness !== ''         && chargeLbs >= 20) return 'medium'
   return 'low'
 }
+
+const STX_KEY = 'stx_events'
+const STX_CAP = 50
+
+function trackEvent(type, fields) {
+  try {
+    const prev  = JSON.parse(localStorage.getItem(STX_KEY) || '[]')
+    const next  = [...prev, { type, ...fields }].slice(-STX_CAP)
+    localStorage.setItem(STX_KEY, JSON.stringify(next))
+  } catch (_) { /* storage unavailable — silent */ }
+}
+
+window.stxSummary = function () {
+  try {
+    const events = JSON.parse(localStorage.getItem(STX_KEY) || '[]')
+    return {
+      total:         events.length,
+      waClicks:      events.filter(e => e.type === 'WA_CLICK').length,
+      saves:         events.filter(e => e.type === 'SAVE_QUOTE').length,
+      highQuality:   events.filter(e => e.leadQuality === 'high').length,
+      mediumQuality: events.filter(e => e.leadQuality === 'medium').length,
+      lowQuality:    events.filter(e => e.leadQuality === 'low').length,
+    }
+  } catch (_) {
+    return null
+  }
+}
 function calcBlendedShipping(lbs, rates) {
   const sorted = [...rates].sort((a, b) => a.min - b.min)
   let total = 0
@@ -597,6 +624,14 @@ export default function Calculator() {
                                 leadQuality: getLeadQuality(shipmentReadiness, calc.chargeLbs),
                                 timestamp: Date.now(),
                               })
+                              trackEvent('WA_CLICK', {
+                                shipmentType,
+                                shipmentReadiness,
+                                shipmentSize,
+                                chargeableWeight: calc.chargeLbs,
+                                leadQuality: getLeadQuality(shipmentReadiness, calc.chargeLbs),
+                                timestamp: Date.now(),
+                              })
                               setWaOpening(true)
                               setTimeout(() => setWaOpening(false), 3000)
                             }}
@@ -635,6 +670,14 @@ export default function Calculator() {
                               onClick={() => {
                                 saveQuote()
                                 console.log('SAVE_QUOTE', {
+                                  shipmentType,
+                                  shipmentReadiness,
+                                  shipmentSize,
+                                  chargeableWeight: calc.chargeLbs,
+                                  leadQuality: getLeadQuality(shipmentReadiness, calc.chargeLbs),
+                                  timestamp: Date.now(),
+                                })
+                                trackEvent('SAVE_QUOTE', {
                                   shipmentType,
                                   shipmentReadiness,
                                   shipmentSize,
