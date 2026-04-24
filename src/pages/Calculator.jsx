@@ -510,6 +510,22 @@ export default function Calculator() {
                           <p style={{ textAlign: 'center', fontSize: '11px', color: 'var(--text-muted)', margin: '2px 0 0', opacity: 0.75 }}>
                             Secure handling · Trusted carriers · Transparent pricing
                           </p>
+                          <div style={{ textAlign: 'center', marginTop: '10px' }}>
+                            <button
+                              onClick={() => saveQuote()}
+                              style={{
+                                background: 'none', border: 'none', padding: '0',
+                                fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500,
+                                textDecoration: 'underline', textDecorationStyle: 'dotted',
+                                cursor: 'pointer', fontFamily: 'inherit',
+                              }}
+                            >
+                              Save this quote for later
+                            </button>
+                            <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '3px 0 0', opacity: 0.7 }}>
+                              No pressure — you can come back anytime
+                            </p>
+                          </div>
                         </>
                       )
                     })()}
