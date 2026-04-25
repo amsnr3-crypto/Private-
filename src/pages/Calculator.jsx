@@ -215,6 +215,8 @@ export default function Calculator() {
   const [dimUnit,    setDimUnit]    = useState('in')
   const [pieces,     setPieces]     = useState(1)
   const [waOpening,     setWaOpening]     = useState(false)
+  const [payLoading,    setPayLoading]    = useState(false)
+  const [payError,      setPayError]      = useState('')
   const [shipmentType,      setShipmentType]      = useState('')
   const [shipmentReadiness, setShipmentReadiness] = useState('')
   const [shipmentSize,     setShipmentSize]      = useState('')
@@ -725,6 +727,57 @@ export default function Calculator() {
                         </>
                       )
                     })()}
+                    {/* Pay Now */}
+                    {calc && (
+                      <div style={{ borderTop: '1px solid var(--border)', paddingTop: '16px', marginTop: '4px' }}>
+                        <button
+                          disabled={payLoading}
+                          onClick={async () => {
+                            setPayLoading(true)
+                            setPayError('')
+                            try {
+                              const res = await fetch('/api/create-checkout-session', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  destinationName: activeDest?.name,
+                                  finalPriceUsd:   calc.total,
+                                }),
+                              })
+                              const data = await res.json()
+                              if (data.url) {
+                                window.location.href = data.url
+                              } else {
+                                setPayError(data.error || 'Could not start checkout.')
+                              }
+                            } catch (e) {
+                              setPayError('Network error. Please try again.')
+                            } finally {
+                              setPayLoading(false)
+                            }
+                          }}
+                          style={{
+                            width: '100%', padding: '12px',
+                            background: payLoading ? 'var(--border)' : 'var(--accent)',
+                            color: '#fff', border: 'none',
+                            borderRadius: 'var(--radius)', fontSize: '15px',
+                            fontWeight: 700, cursor: payLoading ? 'default' : 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                          }}
+                        >
+                          {payLoading ? <><span className="spinner" /> Processing…</> : '💳 Pay Now'}
+                        </button>
+                        {payError && (
+                          <p style={{ fontSize: '12px', color: '#dc2626', marginTop: '8px', textAlign: 'center' }}>
+                            {payError}
+                          </p>
+                        )}
+                        <p style={{ fontSize: '11px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '8px' }}>
+                          Secure payment via Stripe — no card stored
+                        </p>
+                      </div>
+                    )}
+
                     <Link to="/tracking" className="btn btn-ghost">Track a Package</Link>
                   </div>
 

@@ -10,6 +10,7 @@ import Calculator from './pages/Calculator'
 import ProfitDashboard from './pages/ProfitDashboard'
 import ShipmentsDashboard from './pages/ShipmentsDashboard'
 import Quotes from './pages/Quotes'
+import PaymentSuccess from './pages/PaymentSuccess'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
         <Route path="/quotes" element={
           <ProtectedRoute><Quotes /></ProtectedRoute>
         } />
+        <Route path="/success" element={<PaymentSuccess />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
