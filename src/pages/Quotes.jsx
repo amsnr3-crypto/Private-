@@ -41,6 +41,22 @@ function QualityBadge({ value }) {
   )
 }
 
+function buildWaUrl(q) {
+  const lines = [
+    'Hi, following up on your shipping quote from Speedy Texas.',
+    '',
+    `Destination: ${q.destination_name || '—'}`,
+    q.chargeable_weight_lbs != null ? `Chargeable weight: ${Number(q.chargeable_weight_lbs).toFixed(1)} lbs` : null,
+    q.final_price_usd        != null ? `Quoted price: $${Number(q.final_price_usd).toFixed(2)}`              : null,
+    q.shipmentType     ? `Shipment type: ${q.shipmentType}`         : null,
+    q.shipmentReadiness ? `Readiness: ${q.shipmentReadiness}`       : null,
+    q.shipmentSize     ? `Shipment size: ${q.shipmentSize}`         : null,
+    '',
+    'Are you ready to proceed? We can confirm the final details right away.',
+  ].filter(l => l !== null).join('\n')
+  return `https://wa.me/?text=${encodeURIComponent(lines)}`
+}
+
 const COLS = [
   'Destination',
   'Chargeable (lbs)',
@@ -50,6 +66,7 @@ const COLS = [
   'Size',
   'Lead Quality',
   'Date',
+  'Contact',
 ]
 
 const thStyle = {
@@ -182,6 +199,26 @@ export default function Quotes() {
                         </td>
                         <td style={{ ...tdBase, color: 'var(--text-muted)', fontSize: '12px' }}>
                           {formatDate(q.created_at)}
+                        </td>
+                        <td style={tdBase}>
+                          <a
+                            href={buildWaUrl(q)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              display: 'inline-block',
+                              padding: '3px 10px',
+                              fontSize: '12px', fontWeight: 600,
+                              border: '1px solid var(--border)',
+                              borderRadius: '6px',
+                              background: '#fff',
+                              color: '#16a34a',
+                              textDecoration: 'none',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            Open WhatsApp
+                          </a>
                         </td>
                       </tr>
                     ))}
