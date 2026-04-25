@@ -129,6 +129,8 @@ export default function Quotes() {
   const [filterFollowup,       setFilterFollowup]       = useState('all')
   const [filterFollowUpStatus, setFilterFollowUpStatus] = useState('all')
   const [copiedId,        setCopiedId]        = useState(null)
+  const [dailyMode,       setDailyMode]       = useState(false)
+  const [dailyCopiedId,   setDailyCopiedId]   = useState(null)
   const [responses,       setResponses]       = useState(() => {
     try { return JSON.parse(localStorage.getItem('stx_responses') || '{}') }
     catch (_) { return {} }
@@ -226,9 +228,149 @@ export default function Quotes() {
           <h1 style={{ fontSize: '26px', fontWeight: 800, marginBottom: '8px', color: 'var(--text-primary)' }}>
             Quotes
           </h1>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '32px', fontSize: '14px' }}>
-            Internal view — all calculator quotes with lead quality signals.
-          </p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: '14px', margin: 0 }}>
+              Internal view — all calculator quotes with lead quality signals.
+            </p>
+            <button
+              onClick={() => setDailyMode(true)}
+              style={{
+                background: 'var(--primary)', color: '#fff',
+                border: 'none', borderRadius: 'var(--radius)',
+                padding: '9px 18px', fontSize: '14px', fontWeight: 700,
+                cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
+              }}
+            >
+              ⚡ Start Daily Action
+            </button>
+          </div>
+
+          {/* ── Daily Action Modal ── */}
+          {dailyMode && (() => {
+            const topLeads = quotes
+              .filter(q =>
+                q.leadQuality === 'high' &&
+                q.shipmentReadiness === 'Ready now' &&
+                responses[q.id] !== 'closed'
+              )
+              .sort((a, b) => {
+                const diff = calcScore(b, isReturning(b)) - calcScore(a, isReturning(a))
+                return diff !== 0 ? diff : new Date(b.created_at) - new Date(a.created_at)
+              })
+              .slice(0, 5)
+
+            return (
+              <div
+                onClick={e => { if (e.target === e.currentTarget) setDailyMode(false) }}
+                style={{
+                  position: 'fixed', inset: 0, zIndex: 1000,
+                  background: 'rgba(0,0,0,.45)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  padding: '24px',
+                }}
+              >
+                <div style={{
+                  background: '#fff', borderRadius: 'var(--radius-lg)',
+                  boxShadow: '0 24px 64px rgba(0,0,0,.18)',
+                  width: '100%', maxWidth: '600px',
+                  maxHeight: '85vh', overflowY: 'auto',
+                }}>
+                  {/* Header */}
+                  <div style={{
+                    padding: '20px 24px', borderBottom: '1px solid var(--border)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  }}>
+                    <div>
+                      <div style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)' }}>
+                        ⚡ Daily Action — Top Leads
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '3px' }}>
+                        High-priority · Ready now · Not closed
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setDailyMode(false)}
+                      style={{
+                        background: 'none', border: 'none', fontSize: '20px',
+                        cursor: 'pointer', color: 'var(--text-muted)', lineHeight: 1,
+                      }}
+                    >✕</button>
+                  </div>
+
+                  {/* Body */}
+                  <div style={{ padding: '16px 24px 24px' }}>
+                    {topLeads.length === 0 ? (
+                      <div style={{
+                        textAlign: 'center', padding: '40px 0',
+                        color: 'var(--text-muted)', fontSize: '15px',
+                      }}>
+                        No high-priority leads right now
+                      </div>
+                    ) : topLeads.map((q, i) => (
+                      <div key={q.id || i} style={{
+                        border: '1px solid var(--border)', borderRadius: 'var(--radius)',
+                        padding: '16px', marginBottom: '12px',
+                        borderLeft: '4px solid var(--primary)',
+                        background: '#FAFBFF',
+                      }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                          <div>
+                            <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                              {q.destination_name || '—'}
+                            </div>
+                            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                              {q.final_price_usd != null ? `$${Number(q.final_price_usd).toFixed(2)}` : '—'}
+                            </div>
+                          </div>
+                          <span style={{
+                            background: '#e0e7ff', color: '#3730a3',
+                            padding: '2px 9px', borderRadius: '999px',
+                            fontSize: '12px', fontWeight: 700,
+                          }}>
+                            Score {calcScore(q, isReturning(q))}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          <a
+                            href={buildWaUrl(q)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => markContacted(q.id)}
+                            style={{
+                              display: 'inline-block', padding: '5px 14px',
+                              fontSize: '13px', fontWeight: 600,
+                              border: '1px solid var(--border)', borderRadius: '6px',
+                              background: '#fff', color: '#16a34a', textDecoration: 'none',
+                            }}
+                          >
+                            Open WhatsApp
+                          </a>
+                          <button
+                            onClick={() => {
+                              const msg = getFollowUpMessage(q, responses[q.id])
+                              navigator.clipboard.writeText(msg).then(() => {
+                                setDailyCopiedId(q.id)
+                                setTimeout(() => setDailyCopiedId(null), 1500)
+                              })
+                            }}
+                            style={{
+                              padding: '5px 14px', fontSize: '13px', fontWeight: 600,
+                              border: '1px solid var(--border)', borderRadius: '6px',
+                              background: dailyCopiedId === q.id ? '#dcfce7' : '#fff',
+                              color:      dailyCopiedId === q.id ? '#166534' : 'var(--text-secondary)',
+                              cursor: 'pointer', transition: 'all .15s',
+                            }}
+                          >
+                            {dailyCopiedId === q.id ? 'Copied ✓' : 'Copy Follow-up'}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
 
           {/* ── Summary cards ── */}
           <div style={{
