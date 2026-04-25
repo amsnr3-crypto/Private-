@@ -1,7 +1,6 @@
 import Stripe from 'stripe'
 
 export default async function handler(req, res) {
-  // CORS headers for local dev
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
@@ -9,22 +8,19 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const key = (process.env.STRIPE_SECRET_KEY || '').trim()
-  console.log('STRIPE_SECRET_KEY present:', !!key, '| prefix:', key.slice(0, 7))
+  console.log({
+    exists: !!process.env.STRIPE_SECRET_KEY,
+    prefix: process.env.STRIPE_SECRET_KEY?.slice(0, 8),
+  })
 
-  if (!key || !key.startsWith('sk_')) {
-    return res.status(500).json({ error: 'Stripe secret key is missing or malformed.' })
-  }
-
-  // Initialise inside handler so env var is read at runtime, not module load time
-  const stripe = new Stripe(key, { apiVersion: '2023-10-16' })
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
   const {
     destinationName,
     finalPriceUsd,
-    customerName    = '',
-    customerPhone   = '',
-    originCountry   = 'United States',
+    customerName     = '',
+    customerPhone    = '',
+    originCountry    = 'United States',
     chargeableWeight = '',
   } = req.body || {}
 
@@ -52,12 +48,12 @@ export default async function handler(req, res) {
         },
       ],
       metadata: {
-        customer_name:        String(customerName).slice(0, 500),
-        customer_phone:       String(customerPhone).slice(0, 500),
-        origin_country:       String(originCountry).slice(0, 500),
-        destination_country:  String(destinationName || '').slice(0, 500),
-        chargeable_weight:    String(chargeableWeight).slice(0, 500),
-        final_price:          String(finalPriceUsd).slice(0, 500),
+        customer_name:       String(customerName).slice(0, 500),
+        customer_phone:      String(customerPhone).slice(0, 500),
+        origin_country:      String(originCountry).slice(0, 500),
+        destination_country: String(destinationName || '').slice(0, 500),
+        chargeable_weight:   String(chargeableWeight).slice(0, 500),
+        final_price:         String(finalPriceUsd).slice(0, 500),
       },
       success_url: `${origin}/success`,
       cancel_url:  `${origin}/calculator`,
