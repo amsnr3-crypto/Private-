@@ -57,6 +57,15 @@ function buildWaUrl(q) {
   return `https://wa.me/?text=${encodeURIComponent(lines)}`
 }
 
+function buildReturnMap(quotes) {
+  const counts = {}
+  quotes.forEach(q => {
+    const key = `${(q.destination_name || '').toLowerCase()}|${(q.shipmentType || '').toLowerCase()}`
+    counts[key] = (counts[key] || 0) + 1
+  })
+  return counts
+}
+
 const COLS = [
   'Destination',
   'Chargeable (lbs)',
@@ -65,6 +74,7 @@ const COLS = [
   'Readiness',
   'Size',
   'Lead Quality',
+  'Customer Type',
   'Date',
   'Contact',
 ]
@@ -94,6 +104,13 @@ export default function Quotes() {
     }
     fetchQuotes()
   }, [])
+
+  // ── Returning-customer map ──
+  const returnMap = buildReturnMap(quotes)
+  const isReturning = (q) => {
+    const key = `${(q.destination_name || '').toLowerCase()}|${(q.shipmentType || '').toLowerCase()}`
+    return returnMap[key] > 1
+  }
 
   // ── Summary counts ──
   const total  = quotes.length
@@ -196,6 +213,25 @@ export default function Quotes() {
                         </td>
                         <td style={tdBase}>
                           <QualityBadge value={q.leadQuality} />
+                        </td>
+                        <td style={tdBase}>
+                          {isReturning(q) ? (
+                            <span style={{
+                              background: '#dcfce7', color: '#166534',
+                              padding: '2px 10px', borderRadius: '999px',
+                              fontSize: '12px', fontWeight: 700,
+                            }}>
+                              Returning
+                            </span>
+                          ) : (
+                            <span style={{
+                              background: '#f3f4f6', color: '#374151',
+                              padding: '2px 10px', borderRadius: '999px',
+                              fontSize: '12px', fontWeight: 600,
+                            }}>
+                              New
+                            </span>
+                          )}
                         </td>
                         <td style={{ ...tdBase, color: 'var(--text-muted)', fontSize: '12px' }}>
                           {formatDate(q.created_at)}
