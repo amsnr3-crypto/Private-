@@ -55,6 +55,15 @@ function getFollowUpMessage(q, responseStatus) {
   return `Just checking in regarding your shipment to ${q.destination_name}. Let us know if you have any questions.`
 }
 
+function isLostOpportunity(q, responseStatus) {
+  if (q.leadQuality !== 'high')           return false
+  if (q.shipmentReadiness !== 'Ready now') return false
+  if (responseStatus === 'converted')      return false
+  if (!q.last_contacted_at)               return false
+  const hours = (new Date() - new Date(q.last_contacted_at)) / (1000 * 60 * 60)
+  return hours > 48
+}
+
 function needsFollowUp(q) {
   if (!q.last_contacted_at) return true
   const hours = (new Date() - new Date(q.last_contacted_at)) / (1000 * 60 * 60)
@@ -128,6 +137,7 @@ export default function Quotes() {
   const [filterReadiness,      setFilterReadiness]      = useState('all')
   const [filterFollowup,       setFilterFollowup]       = useState('all')
   const [filterFollowUpStatus, setFilterFollowUpStatus] = useState('all')
+  const [filterLost,           setFilterLost]           = useState('all')
   const [copiedId,        setCopiedId]        = useState(null)
   const [dailyMode,       setDailyMode]       = useState(false)
   const [dailyCopiedId,   setDailyCopiedId]   = useState(null)
@@ -195,8 +205,9 @@ export default function Quotes() {
     if (filterReadiness !== 'all' && q.shipmentReadiness !== filterReadiness) return false
     if (filterFollowup === 'contacted'     && followups[q.id] !== 'contacted') return false
     if (filterFollowup === 'not-contacted' && followups[q.id] === 'contacted') return false
-    if (filterFollowUpStatus === 'needs_followup' && !needsFollowUp(q))        return false
-    if (filterFollowUpStatus === 'up_to_date'     &&  needsFollowUp(q))        return false
+    if (filterFollowUpStatus === 'needs_followup' && !needsFollowUp(q))                          return false
+    if (filterFollowUpStatus === 'up_to_date'     &&  needsFollowUp(q))                          return false
+    if (filterLost === 'lost_only' && !isLostOpportunity(q, responses[q.id]))                    return false
     return true
   })
 
@@ -212,13 +223,15 @@ export default function Quotes() {
   const medium    = quotes.filter(q => q.leadQuality === 'medium').length
   const low       = quotes.filter(q => q.leadQuality === 'low').length
   const converted = quotes.filter(q => responses[q.id] === 'converted').length
+  const lost      = quotes.filter(q => isLostOpportunity(q, responses[q.id])).length
 
   const SUMMARY = [
-    { label: 'Total Quotes',    value: total },
-    { label: 'High Quality',    value: high,      color: '#166534', bg: '#dcfce7' },
-    { label: 'Medium Quality',  value: medium,    color: '#854d0e', bg: '#fef9c3' },
-    { label: 'Low Quality',     value: low,       color: '#374151', bg: '#f3f4f6' },
-    { label: 'Converted Leads', value: converted, color: '#065f46', bg: '#d1fae5' },
+    { label: 'Total Quotes',       value: total },
+    { label: 'High Quality',       value: high,      color: '#166534', bg: '#dcfce7' },
+    { label: 'Medium Quality',     value: medium,    color: '#854d0e', bg: '#fef9c3' },
+    { label: 'Low Quality',        value: low,       color: '#374151', bg: '#f3f4f6' },
+    { label: 'Converted Leads',    value: converted, color: '#065f46', bg: '#d1fae5' },
+    { label: 'Lost Opportunities', value: lost,      color: '#5b21b6', bg: '#f5f3ff' },
   ]
 
   return (
@@ -450,6 +463,13 @@ export default function Quotes() {
                     { value: 'up_to_date',     label: 'Up to date' },
                   ],
                 },
+                {
+                  value: filterLost, set: setFilterLost,
+                  options: [
+                    { value: 'all',       label: 'Lost' },
+                    { value: 'lost_only', label: 'Lost only' },
+                  ],
+                },
               ].map((f, idx) => (
                 <select
                   key={idx}
@@ -468,9 +488,9 @@ export default function Quotes() {
                   ))}
                 </select>
               ))}
-              {(filterQuality !== 'all' || filterReadiness !== 'all' || filterFollowup !== 'all' || filterFollowUpStatus !== 'all') && (
+              {(filterQuality !== 'all' || filterReadiness !== 'all' || filterFollowup !== 'all' || filterFollowUpStatus !== 'all' || filterLost !== 'all') && (
                 <button
-                  onClick={() => { setFilterQuality('all'); setFilterReadiness('all'); setFilterFollowup('all'); setFilterFollowUpStatus('all') }}
+                  onClick={() => { setFilterQuality('all'); setFilterReadiness('all'); setFilterFollowup('all'); setFilterFollowUpStatus('all'); setFilterLost('all') }}
                   style={{
                     background: 'none', border: 'none', fontSize: '12px',
                     color: 'var(--text-muted)', cursor: 'pointer', padding: '0 4px',
@@ -504,8 +524,9 @@ export default function Quotes() {
                         && followups[q.id] !== 'contacted'
                       const followUpNeeded = needsFollowUp(q)
                       const showFollowUpAlert = followUpNeeded && responses[q.id] !== 'closed'
-                      const rowBg = showFollowUpAlert ? '#fef2f2' : isUrgent ? '#fffbeb' : '#fff'
-                      const rowBorder = showFollowUpAlert ? '3px solid #ef4444' : isUrgent ? '3px solid #f59e0b' : '3px solid transparent'
+                      const isLost = isLostOpportunity(q, responses[q.id])
+                      const rowBg     = isLost ? '#f5f3ff' : showFollowUpAlert ? '#fef2f2' : isUrgent ? '#fffbeb' : '#fff'
+                      const rowBorder = isLost ? '3px solid #7c3aed' : showFollowUpAlert ? '3px solid #ef4444' : isUrgent ? '3px solid #f59e0b' : '3px solid transparent'
                       return (
                       <tr key={q.id || i} style={{
                         background: rowBg,
@@ -560,6 +581,17 @@ export default function Quotes() {
                               fontSize: '11px', fontWeight: 700,
                             }}>
                               Follow-up needed
+                            </span>
+                          )}
+                          {isLost && (
+                            <span style={{
+                              marginLeft: '6px',
+                              display: 'inline-block',
+                              background: '#ede9fe', color: '#5b21b6',
+                              padding: '1px 7px', borderRadius: '999px',
+                              fontSize: '11px', fontWeight: 700,
+                            }}>
+                              Lost opportunity
                             </span>
                           )}
                         </td>
