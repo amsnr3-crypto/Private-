@@ -41,6 +41,12 @@ function QualityBadge({ value }) {
   )
 }
 
+function needsFollowUp(q) {
+  if (!q.last_contacted_at) return true
+  const hours = (new Date() - new Date(q.last_contacted_at)) / (1000 * 60 * 60)
+  return hours > 24
+}
+
 function buildWaUrl(q) {
   const lines = [
     'Hi, following up on your shipping quote from Speedy Texas.',
@@ -104,9 +110,10 @@ const tdBase = { padding: '12px 16px', borderBottom: '1px solid var(--border)' }
 export default function Quotes() {
   const [quotes,       setQuotes]       = useState([])
   const [loading,      setLoading]      = useState(true)
-  const [filterQuality,   setFilterQuality]   = useState('all')
-  const [filterReadiness, setFilterReadiness] = useState('all')
-  const [filterFollowup,  setFilterFollowup]  = useState('all')
+  const [filterQuality,        setFilterQuality]        = useState('all')
+  const [filterReadiness,      setFilterReadiness]      = useState('all')
+  const [filterFollowup,       setFilterFollowup]       = useState('all')
+  const [filterFollowUpStatus, setFilterFollowUpStatus] = useState('all')
   const [copiedId,        setCopiedId]        = useState(null)
   const [responses,       setResponses]       = useState(() => {
     try { return JSON.parse(localStorage.getItem('stx_responses') || '{}') }
@@ -172,6 +179,8 @@ export default function Quotes() {
     if (filterReadiness !== 'all' && q.shipmentReadiness !== filterReadiness) return false
     if (filterFollowup === 'contacted'     && followups[q.id] !== 'contacted') return false
     if (filterFollowup === 'not-contacted' && followups[q.id] === 'contacted') return false
+    if (filterFollowUpStatus === 'needs_followup' && !needsFollowUp(q))        return false
+    if (filterFollowUpStatus === 'up_to_date'     &&  needsFollowUp(q))        return false
     return true
   })
 
@@ -275,6 +284,14 @@ export default function Quotes() {
                     { value: 'not-contacted', label: 'Not contacted' },
                   ],
                 },
+                {
+                  value: filterFollowUpStatus, set: setFilterFollowUpStatus,
+                  options: [
+                    { value: 'all',            label: 'Follow-up status' },
+                    { value: 'needs_followup', label: 'Needs follow-up' },
+                    { value: 'up_to_date',     label: 'Up to date' },
+                  ],
+                },
               ].map((f, idx) => (
                 <select
                   key={idx}
@@ -293,9 +310,9 @@ export default function Quotes() {
                   ))}
                 </select>
               ))}
-              {(filterQuality !== 'all' || filterReadiness !== 'all' || filterFollowup !== 'all') && (
+              {(filterQuality !== 'all' || filterReadiness !== 'all' || filterFollowup !== 'all' || filterFollowUpStatus !== 'all') && (
                 <button
-                  onClick={() => { setFilterQuality('all'); setFilterReadiness('all'); setFilterFollowup('all') }}
+                  onClick={() => { setFilterQuality('all'); setFilterReadiness('all'); setFilterFollowup('all'); setFilterFollowUpStatus('all') }}
                   style={{
                     background: 'none', border: 'none', fontSize: '12px',
                     color: 'var(--text-muted)', cursor: 'pointer', padding: '0 4px',
@@ -327,10 +344,14 @@ export default function Quotes() {
                       const isUrgent = q.leadQuality === 'high'
                         && q.shipmentReadiness === 'Ready now'
                         && followups[q.id] !== 'contacted'
+                      const followUpNeeded = needsFollowUp(q)
+                      const showFollowUpAlert = followUpNeeded && responses[q.id] !== 'closed'
+                      const rowBg = showFollowUpAlert ? '#fef2f2' : isUrgent ? '#fffbeb' : '#fff'
+                      const rowBorder = showFollowUpAlert ? '3px solid #ef4444' : isUrgent ? '3px solid #f59e0b' : '3px solid transparent'
                       return (
                       <tr key={q.id || i} style={{
-                        background: isUrgent ? '#fffbeb' : '#fff',
-                        borderLeft: isUrgent ? '3px solid #f59e0b' : '3px solid transparent',
+                        background: rowBg,
+                        borderLeft: rowBorder,
                       }}>
                         <td style={{ ...tdBase, color: 'var(--text-primary)', fontWeight: 500 }}>
                           {q.destination_name || '—'}
@@ -370,6 +391,17 @@ export default function Quotes() {
                               fontSize: '11px', fontWeight: 700,
                             }}>
                               🔥 Urgent
+                            </span>
+                          )}
+                          {showFollowUpAlert && (
+                            <span style={{
+                              marginLeft: '6px',
+                              display: 'inline-block',
+                              background: '#fee2e2', color: '#991b1b',
+                              padding: '1px 7px', borderRadius: '999px',
+                              fontSize: '11px', fontWeight: 700,
+                            }}>
+                              Follow-up needed
                             </span>
                           )}
                         </td>
