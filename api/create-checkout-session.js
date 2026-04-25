@@ -19,7 +19,14 @@ export default async function handler(req, res) {
   // Initialise inside handler so env var is read at runtime, not module load time
   const stripe = new Stripe(key, { apiVersion: '2023-10-16' })
 
-  const { destinationName, finalPriceUsd } = req.body || {}
+  const {
+    destinationName,
+    finalPriceUsd,
+    customerName    = '',
+    customerPhone   = '',
+    originCountry   = 'United States',
+    chargeableWeight = '',
+  } = req.body || {}
 
   if (!finalPriceUsd || isNaN(Number(finalPriceUsd))) {
     return res.status(400).json({ error: 'Invalid price' })
@@ -44,6 +51,14 @@ export default async function handler(req, res) {
           quantity: 1,
         },
       ],
+      metadata: {
+        customer_name:        String(customerName).slice(0, 500),
+        customer_phone:       String(customerPhone).slice(0, 500),
+        origin_country:       String(originCountry).slice(0, 500),
+        destination_country:  String(destinationName || '').slice(0, 500),
+        chargeable_weight:    String(chargeableWeight).slice(0, 500),
+        final_price:          String(finalPriceUsd).slice(0, 500),
+      },
       success_url: `${origin}/success`,
       cancel_url:  `${origin}/calculator`,
     })
