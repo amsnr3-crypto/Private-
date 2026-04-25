@@ -213,6 +213,7 @@ export default function Calculator() {
   const [shipmentType,      setShipmentType]      = useState('')
   const [shipmentReadiness, setShipmentReadiness] = useState('')
   const [shipmentSize,     setShipmentSize]      = useState('')
+  const [customerEmail,    setCustomerEmail]     = useState('')
   const calc = useMemo(
     () => calculateQuote({ country, weight, weightUnit, length, width, height, dimUnit, pieces }),
     [country, weight, weightUnit, length, width, height, dimUnit, pieces]
@@ -237,6 +238,7 @@ export default function Calculator() {
     non_conv_fee_usd:      calc.nonConvFee,
     overweight_fee_usd:    calc.overweightFee,
     piece_fee_usd:         calc.pieceFee,
+    customer_email:        customerEmail.trim() || null,
     created_at:            new Date().toISOString(),
   } : null
 
@@ -562,6 +564,21 @@ export default function Calculator() {
                       </div>
                     </div>
 
+                    {/* ── Customer email (optional) ── */}
+                    <div style={{ marginBottom: '16px' }}>
+                      <label style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '8px' }}>
+                        Email address <span style={{ fontWeight: 400, color: 'var(--text-muted)', fontSize: '12px' }}>(optional)</span>
+                      </label>
+                      <input
+                        type="email"
+                        placeholder="name@example.com"
+                        value={customerEmail}
+                        onChange={e => setCustomerEmail(e.target.value)}
+                        className="form-input"
+                        style={{ width: '100%' }}
+                      />
+                    </div>
+
                     <Link
                       to="/new-shipment"
                       state={{
@@ -594,6 +611,7 @@ export default function Calculator() {
                         `Chargeable Weight: ${r2(calc.chargeLbs)} lbs`,
                         `Pieces: ${calc.pieces}`,
                         `Quoted Price: $${calc.total.toFixed(2)}`,
+                        customerEmail.trim() ? `Customer email: ${customerEmail.trim()}` : null,
                         '',
                         'Please confirm the next step.',
                       ].filter(l => l !== null).join('\n')

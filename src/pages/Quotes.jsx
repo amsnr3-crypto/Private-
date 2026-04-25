@@ -85,6 +85,7 @@ const COLS = [
   'Size',
   'Lead Quality',
   'Customer Type',
+  'Email',
   'Date',
   'Follow-up',
   'Response',
@@ -384,6 +385,12 @@ export default function Quotes() {
                             </span>
                           )}
                         </td>
+                        <td style={{ ...tdBase, fontSize: '12px' }}>
+                          {q.customer_email
+                            ? <a href={`mailto:${q.customer_email}`} style={{ color: 'var(--primary)', textDecoration: 'none' }}>{q.customer_email}</a>
+                            : <span style={{ color: 'var(--text-muted)' }}>—</span>
+                          }
+                        </td>
                         <td style={{ ...tdBase, color: 'var(--text-muted)', fontSize: '12px' }}>
                           {formatDate(q.created_at)}
                         </td>
@@ -490,6 +497,28 @@ export default function Quotes() {
                             >
                               {copiedId === q.id ? 'Copied ✓' : 'Copy Message'}
                             </button>
+                            {q.customer_email && (() => {
+                              const body = `Hi, just following up on your shipment to ${q.destination_name || '—'}. Your estimated cost was $${q.final_price_usd != null ? Number(q.final_price_usd).toFixed(2) : '—'}. Let us know if you're ready to proceed — we can arrange it quickly.`
+                              const href = `mailto:${q.customer_email}?subject=${encodeURIComponent('Speedy Texas shipment quote')}&body=${encodeURIComponent(body)}`
+                              return (
+                                <a
+                                  href={href}
+                                  style={{
+                                    display: 'inline-block',
+                                    padding: '3px 10px',
+                                    fontSize: '12px', fontWeight: 600,
+                                    border: '1px solid var(--border)',
+                                    borderRadius: '6px',
+                                    background: '#fff',
+                                    color: 'var(--primary)',
+                                    textDecoration: 'none',
+                                    whiteSpace: 'nowrap',
+                                  }}
+                                >
+                                  Email
+                                </a>
+                              )
+                            })()}
                           </div>
                         </td>
                       </tr>
