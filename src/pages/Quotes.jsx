@@ -57,6 +57,16 @@ function buildWaUrl(q) {
   return `https://wa.me/?text=${encodeURIComponent(lines)}`
 }
 
+function calcScore(q, returning) {
+  let s = 0
+  if (q.leadQuality        === 'high')            s += 3
+  if (q.leadQuality        === 'medium')          s += 2
+  if (q.shipmentReadiness  === 'Ready now')       s += 2
+  if (q.shipmentReadiness  === 'Within 2–3 days') s += 1
+  if (returning)                                  s += 2
+  return s
+}
+
 function buildReturnMap(quotes) {
   const counts = {}
   quotes.forEach(q => {
@@ -111,6 +121,13 @@ export default function Quotes() {
     const key = `${(q.destination_name || '').toLowerCase()}|${(q.shipmentType || '').toLowerCase()}`
     return returnMap[key] > 1
   }
+
+  // ── Priority sort ──
+  const sorted = [...quotes].sort((a, b) => {
+    const scoreDiff = calcScore(b, isReturning(b)) - calcScore(a, isReturning(a))
+    if (scoreDiff !== 0) return scoreDiff
+    return new Date(b.created_at) - new Date(a.created_at)
+  })
 
   // ── Summary counts ──
   const total  = quotes.length
@@ -191,7 +208,7 @@ export default function Quotes() {
                     </tr>
                   </thead>
                   <tbody>
-                    {quotes.map((q, i) => (
+                    {sorted.map((q, i) => (
                       <tr key={q.id || i} style={{ background: '#fff' }}>
                         <td style={{ ...tdBase, color: 'var(--text-primary)', fontWeight: 500 }}>
                           {q.destination_name || '—'}
@@ -211,8 +228,17 @@ export default function Quotes() {
                         <td style={{ ...tdBase, color: 'var(--text-secondary)' }}>
                           {q.shipmentSize || '—'}
                         </td>
-                        <td style={tdBase}>
+                        <td style={{ ...tdBase, whiteSpace: 'nowrap' }}>
                           <QualityBadge value={q.leadQuality} />
+                          <span style={{
+                            marginLeft: '6px',
+                            display: 'inline-block',
+                            background: '#e0e7ff', color: '#3730a3',
+                            padding: '1px 7px', borderRadius: '999px',
+                            fontSize: '11px', fontWeight: 700,
+                          }}>
+                            {calcScore(q, isReturning(q))}
+                          </span>
                         </td>
                         <td style={tdBase}>
                           {isReturning(q) ? (
