@@ -87,6 +87,7 @@ const COLS = [
   'Customer Type',
   'Date',
   'Follow-up',
+  'Response',
   'Contact',
 ]
 
@@ -106,6 +107,19 @@ export default function Quotes() {
   const [filterReadiness, setFilterReadiness] = useState('all')
   const [filterFollowup,  setFilterFollowup]  = useState('all')
   const [copiedId,        setCopiedId]        = useState(null)
+  const [responses,       setResponses]       = useState(() => {
+    try { return JSON.parse(localStorage.getItem('stx_responses') || '{}') }
+    catch (_) { return {} }
+  })
+
+  function setResponse(id, status) {
+    if (!id) return
+    setResponses(prev => {
+      const next = { ...prev, [id]: status }
+      try { localStorage.setItem('stx_responses', JSON.stringify(next)) } catch (_) {}
+      return next
+    })
+  }
   const [followups, setFollowups] = useState(() => {
     try { return JSON.parse(localStorage.getItem('stx_followups') || '{}') }
     catch (_) { return {} }
@@ -401,6 +415,39 @@ export default function Quotes() {
                               Mark as Contacted
                             </button>
                           )}
+                        </td>
+                        <td style={{ ...tdBase, whiteSpace: 'nowrap' }}>
+                          {(() => {
+                            const current = responses[q.id] || null
+                            const OPTS = [
+                              { value: 'no_reply', label: 'No reply', active: { background: '#f3f4f6', color: '#374151' }, idle: { background: '#fff', color: 'var(--text-muted)' } },
+                              { value: 'replied',  label: 'Replied',  active: { background: '#dbeafe', color: '#1e40af' }, idle: { background: '#fff', color: 'var(--text-muted)' } },
+                              { value: 'closed',   label: 'Closed',   active: { background: '#1e293b', color: '#f1f5f9' }, idle: { background: '#fff', color: 'var(--text-muted)' } },
+                            ]
+                            return (
+                              <div style={{ display: 'flex', gap: '4px' }}>
+                                {OPTS.map(opt => {
+                                  const isActive = current === opt.value
+                                  return (
+                                    <button
+                                      key={opt.value}
+                                      onClick={() => setResponse(q.id, opt.value)}
+                                      style={{
+                                        ...(isActive ? opt.active : opt.idle),
+                                        border: `1px solid ${isActive ? 'transparent' : 'var(--border)'}`,
+                                        borderRadius: '6px', padding: '3px 8px',
+                                        fontSize: '11px', fontWeight: isActive ? 700 : 500,
+                                        cursor: 'pointer', whiteSpace: 'nowrap',
+                                        transition: 'all .15s',
+                                      }}
+                                    >
+                                      {opt.label}
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            )
+                          })()}
                         </td>
                         <td style={{ ...tdBase, whiteSpace: 'nowrap' }}>
                           <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
