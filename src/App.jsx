@@ -9,6 +9,7 @@ import Tracking from './pages/Tracking'
 import Calculator from './pages/Calculator'
 import ProfitDashboard from './pages/ProfitDashboard'
 import ShipmentsDashboard from './pages/ShipmentsDashboard'
+import Quotes from './pages/Quotes'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -34,6 +35,9 @@ function App() {
         } />
         <Route path="/dashboard/shipments" element={
           <ProtectedRoute><ShipmentsDashboard /></ProtectedRoute>
+        } />
+        <Route path="/quotes" element={
+          <ProtectedRoute><Quotes /></ProtectedRoute>
         } />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="*" element={<Navigate to="/" replace />} />

@@ -22,7 +22,7 @@ export default function Navbar({ variant = 'transparent' }) {
     navigate('/login')
   }
 
-  const isDashboard = ['/dashboard', '/new-shipment', '/tracking', '/calculator'].includes(location.pathname)
+  const isDashboard = ['/dashboard', '/new-shipment', '/tracking', '/calculator', '/quotes'].includes(location.pathname)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -50,6 +50,7 @@ export default function Navbar({ variant = 'transparent' }) {
             <Link to="/new-shipment" className={location.pathname === '/new-shipment' ? 'active' : ''}>New Shipment</Link>
             <Link to="/tracking"     className={location.pathname === '/tracking'     ? 'active' : ''}>Tracking</Link>
             <Link to="/calculator"   className={location.pathname === '/calculator'   ? 'active' : ''}>Calculator</Link>
+            <Link to="/quotes"       className={location.pathname === '/quotes'       ? 'active' : ''}>Quotes</Link>
           </div>
           <div className="navbar-right">
             <div className="user-avatar">{userInitial}</div>
@@ -65,6 +66,7 @@ export default function Navbar({ variant = 'transparent' }) {
             <Link to="/new-shipment">New Shipment</Link>
             <Link to="/tracking">Tracking</Link>
             <Link to="/calculator">Calculator</Link>
+            <Link to="/quotes">Quotes</Link>
             <button className="btn btn-ghost btn-sm" onClick={handleLogout}>Logout</button>
           </div>
         )}
