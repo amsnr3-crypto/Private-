@@ -41,6 +41,20 @@ function QualityBadge({ value }) {
   )
 }
 
+function getFollowUpMessage(q, responseStatus) {
+  if (responseStatus === 'replied') {
+    return `Great to hear back from you. We can proceed with your shipment to ${q.destination_name} anytime — just let us know.`
+  }
+  if (!q.last_contacted_at) {
+    return `Hi, just checking if you're still interested in shipping to ${q.destination_name}. We can arrange everything quickly.`
+  }
+  const hours = (new Date() - new Date(q.last_contacted_at)) / (1000 * 60 * 60)
+  if (hours > 48) {
+    return `Following up again on your shipment to ${q.destination_name}. Let us know if you're ready — we can schedule it immediately.`
+  }
+  return `Just checking in regarding your shipment to ${q.destination_name}. Let us know if you have any questions.`
+}
+
 function needsFollowUp(q) {
   if (!q.last_contacted_at) return true
   const hours = (new Date() - new Date(q.last_contacted_at)) / (1000 * 60 * 60)
@@ -518,7 +532,7 @@ export default function Quotes() {
                             </a>
                             <button
                               onClick={() => {
-                                const msg = `Hi, just following up on your shipment to ${q.destination_name || '—'}. Your estimated cost was $${q.final_price_usd != null ? Number(q.final_price_usd).toFixed(2) : '—'}. Let us know if you're ready to proceed — we can arrange it quickly.`
+                                const msg = getFollowUpMessage(q, responses[q.id])
                                 navigator.clipboard.writeText(msg).then(() => {
                                   setCopiedId(q.id)
                                   setTimeout(() => setCopiedId(null), 1500)
@@ -535,7 +549,7 @@ export default function Quotes() {
                                 transition: 'background .15s, color .15s',
                               }}
                             >
-                              {copiedId === q.id ? 'Copied ✓' : 'Copy Message'}
+                              {copiedId === q.id ? 'Copied ✓' : 'Copy Follow-up'}
                             </button>
                             {q.customer_email && (() => {
                               const body = `Hi, just following up on your shipment to ${q.destination_name || '—'}. Your estimated cost was $${q.final_price_usd != null ? Number(q.final_price_usd).toFixed(2) : '—'}. Let us know if you're ready to proceed — we can arrange it quickly.`
