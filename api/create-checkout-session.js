@@ -8,15 +8,12 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end()
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  console.log({
-    exists: !!process.env.STRIPE_SECRET_KEY,
-    prefix: process.env.STRIPE_SECRET_KEY?.slice(0, 8),
-  })
+  console.log("KEY:", process.env.STRIPE_SECRET_KEY ? "exists" : "missing")
 
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 
   const {
-    destinationName,
+    destinationName  = 'destination',
     finalPriceUsd,
     customerName     = '',
     customerPhone    = '',
@@ -24,12 +21,17 @@ export default async function handler(req, res) {
     chargeableWeight = '',
   } = req.body || {}
 
-  if (!finalPriceUsd || isNaN(Number(finalPriceUsd))) {
+  const price = Number(finalPriceUsd)
+  if (!finalPriceUsd || isNaN(price) || price <= 0) {
     return res.status(400).json({ error: 'Invalid price' })
   }
 
-  const amountCents = Math.round(Number(finalPriceUsd) * 100)
-  const origin = (req.headers.origin || `https://${req.headers.host}`).replace(/\/$/, '')
+  const amountCents = Math.round(price * 100)
+  const host   = req.headers.host || ''
+  const origin = req.headers.origin || `https://${host}`
+
+  const successUrl = `${origin}/success`
+  const cancelUrl  = `${origin}/calculator`
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -40,7 +42,7 @@ export default async function handler(req, res) {
             currency: 'usd',
             unit_amount: amountCents,
             product_data: {
-              name: `Shipping to ${destinationName || 'destination'}`,
+              name: `Shipping to ${destinationName}`,
               description: 'Speedy Texas international air freight',
             },
           },
@@ -51,12 +53,12 @@ export default async function handler(req, res) {
         customer_name:       String(customerName).slice(0, 500),
         customer_phone:      String(customerPhone).slice(0, 500),
         origin_country:      String(originCountry).slice(0, 500),
-        destination_country: String(destinationName || '').slice(0, 500),
+        destination_country: String(destinationName).slice(0, 500),
         chargeable_weight:   String(chargeableWeight).slice(0, 500),
         final_price:         String(finalPriceUsd).slice(0, 500),
       },
-      success_url: `${origin}/success`,
-      cancel_url:  `${origin}/calculator`,
+      success_url: successUrl,
+      cancel_url:  cancelUrl,
     })
 
     return res.status(200).json({ url: session.url })
