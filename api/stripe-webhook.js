@@ -19,12 +19,11 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const stripeKey    = (process.env.STRIPE_SECRET_KEY    || '').trim()
-  const webhookSecret = (process.env.STRIPE_WEBHOOK_SECRET || '').trim()
-  const supabaseUrl  = (process.env.SUPABASE_URL         || '').trim()
-  const serviceKey   = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim()
+  const webhookSecret = (process.env.STRIPE_WEBHOOK_SECRET      || '').trim()
+  const supabaseUrl   = (process.env.SUPABASE_URL               || '').trim()
+  const serviceKey    = (process.env.SUPABASE_SERVICE_ROLE_KEY  || '').trim()
 
-  if (!stripeKey || !webhookSecret) {
+  if (!process.env.STRIPE_SECRET_KEY || !webhookSecret) {
     console.error('Missing Stripe env vars')
     return res.status(500).json({ error: 'Server misconfigured' })
   }
@@ -33,7 +32,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Server misconfigured' })
   }
 
-  const stripe    = new Stripe(stripeKey, { apiVersion: '2023-10-16' })
+  const stripe    = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: '2023-10-16' })
   const supabase  = createClient(supabaseUrl, serviceKey)
 
   // ── Verify webhook signature ──
