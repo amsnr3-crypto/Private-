@@ -100,8 +100,11 @@ const thStyle = {
 const tdBase = { padding: '12px 16px', borderBottom: '1px solid var(--border)' }
 
 export default function Quotes() {
-  const [quotes,    setQuotes]    = useState([])
-  const [loading,   setLoading]   = useState(true)
+  const [quotes,       setQuotes]       = useState([])
+  const [loading,      setLoading]      = useState(true)
+  const [filterQuality,   setFilterQuality]   = useState('all')
+  const [filterReadiness, setFilterReadiness] = useState('all')
+  const [filterFollowup,  setFilterFollowup]  = useState('all')
   const [followups, setFollowups] = useState(() => {
     try { return JSON.parse(localStorage.getItem('stx_followups') || '{}') }
     catch (_) { return {} }
@@ -140,8 +143,16 @@ export default function Quotes() {
     return returnMap[key] > 1
   }
 
-  // ── Priority sort ──
-  const sorted = [...quotes].sort((a, b) => {
+  // ── Filter + sort ──
+  const filtered = quotes.filter(q => {
+    if (filterQuality   !== 'all' && q.leadQuality       !== filterQuality)   return false
+    if (filterReadiness !== 'all' && q.shipmentReadiness !== filterReadiness) return false
+    if (filterFollowup === 'contacted'     && followups[q.id] !== 'contacted') return false
+    if (filterFollowup === 'not-contacted' && followups[q.id] === 'contacted') return false
+    return true
+  })
+
+  const sorted = [...filtered].sort((a, b) => {
     const scoreDiff = calcScore(b, isReturning(b)) - calcScore(a, isReturning(a))
     if (scoreDiff !== 0) return scoreDiff
     return new Date(b.created_at) - new Date(a.created_at)
@@ -207,10 +218,73 @@ export default function Quotes() {
             background: '#fff', border: '1px solid var(--border)',
             borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden',
           }}>
-            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
+            <div style={{
+              padding: '16px 24px', borderBottom: '1px solid var(--border)',
+              display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '10px',
+            }}>
+              <h2 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginRight: '6px', flexShrink: 0 }}>
                 All Quotes
               </h2>
+              {[
+                {
+                  value: filterQuality, set: setFilterQuality,
+                  options: [
+                    { value: 'all',    label: 'All Quality' },
+                    { value: 'high',   label: 'High' },
+                    { value: 'medium', label: 'Medium' },
+                    { value: 'low',    label: 'Low' },
+                  ],
+                },
+                {
+                  value: filterReadiness, set: setFilterReadiness,
+                  options: [
+                    { value: 'all',              label: 'All Readiness' },
+                    { value: 'Ready now',         label: 'Ready now' },
+                    { value: 'Within 2–3 days',   label: 'Within 2–3 days' },
+                    { value: 'Just exploring',    label: 'Just exploring' },
+                  ],
+                },
+                {
+                  value: filterFollowup, set: setFilterFollowup,
+                  options: [
+                    { value: 'all',           label: 'All Follow-ups' },
+                    { value: 'contacted',     label: 'Contacted' },
+                    { value: 'not-contacted', label: 'Not contacted' },
+                  ],
+                },
+              ].map((f, idx) => (
+                <select
+                  key={idx}
+                  value={f.value}
+                  onChange={e => f.set(e.target.value)}
+                  style={{
+                    border: '1px solid var(--border)', borderRadius: '6px',
+                    padding: '5px 10px', fontSize: '13px', fontWeight: 500,
+                    color: f.value !== 'all' ? 'var(--primary)' : 'var(--text-secondary)',
+                    background: f.value !== 'all' ? '#EEF3FF' : '#fff',
+                    cursor: 'pointer', outline: 'none',
+                  }}
+                >
+                  {f.options.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              ))}
+              {(filterQuality !== 'all' || filterReadiness !== 'all' || filterFollowup !== 'all') && (
+                <button
+                  onClick={() => { setFilterQuality('all'); setFilterReadiness('all'); setFilterFollowup('all') }}
+                  style={{
+                    background: 'none', border: 'none', fontSize: '12px',
+                    color: 'var(--text-muted)', cursor: 'pointer', padding: '0 4px',
+                    textDecoration: 'underline',
+                  }}
+                >
+                  Clear filters
+                </button>
+              )}
+              <span style={{ marginLeft: 'auto', fontSize: '12px', color: 'var(--text-muted)', flexShrink: 0 }}>
+                {sorted.length} of {quotes.length}
+              </span>
             </div>
 
             {loading ? (
