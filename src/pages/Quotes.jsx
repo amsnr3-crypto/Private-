@@ -300,8 +300,15 @@ export default function Quotes() {
                     </tr>
                   </thead>
                   <tbody>
-                    {sorted.map((q, i) => (
-                      <tr key={q.id || i} style={{ background: '#fff' }}>
+                    {sorted.map((q, i) => {
+                      const isUrgent = q.leadQuality === 'high'
+                        && q.shipmentReadiness === 'Ready now'
+                        && followups[q.id] !== 'contacted'
+                      return (
+                      <tr key={q.id || i} style={{
+                        background: isUrgent ? '#fffbeb' : '#fff',
+                        borderLeft: isUrgent ? '3px solid #f59e0b' : '3px solid transparent',
+                      }}>
                         <td style={{ ...tdBase, color: 'var(--text-primary)', fontWeight: 500 }}>
                           {q.destination_name || '—'}
                         </td>
@@ -331,6 +338,17 @@ export default function Quotes() {
                           }}>
                             {calcScore(q, isReturning(q))}
                           </span>
+                          {isUrgent && (
+                            <span style={{
+                              marginLeft: '6px',
+                              display: 'inline-block',
+                              background: '#fef3c7', color: '#b45309',
+                              padding: '1px 7px', borderRadius: '999px',
+                              fontSize: '11px', fontWeight: 700,
+                            }}>
+                              🔥 Urgent
+                            </span>
+                          )}
                         </td>
                         <td style={tdBase}>
                           {isReturning(q) ? (
@@ -404,7 +422,7 @@ export default function Quotes() {
                           </a>
                         </td>
                       </tr>
-                    ))}
+                    )})}
                   </tbody>
                 </table>
               </div>
