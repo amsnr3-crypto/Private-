@@ -86,6 +86,7 @@ const COLS = [
   'Lead Quality',
   'Customer Type',
   'Date',
+  'Follow-up',
   'Contact',
 ]
 
@@ -99,8 +100,25 @@ const thStyle = {
 const tdBase = { padding: '12px 16px', borderBottom: '1px solid var(--border)' }
 
 export default function Quotes() {
-  const [quotes,  setQuotes]  = useState([])
-  const [loading, setLoading] = useState(true)
+  const [quotes,    setQuotes]    = useState([])
+  const [loading,   setLoading]   = useState(true)
+  const [followups, setFollowups] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('stx_followups') || '{}') }
+    catch (_) { return {} }
+  })
+
+  function toggleFollowup(id) {
+    if (!id) return
+    setFollowups(prev => {
+      const next = prev[id] === 'contacted'
+        ? { ...prev, [id]: undefined }
+        : { ...prev, [id]: 'contacted' }
+      // remove undefined keys before saving
+      const clean = Object.fromEntries(Object.entries(next).filter(([, v]) => v))
+      try { localStorage.setItem('stx_followups', JSON.stringify(clean)) } catch (_) {}
+      return clean
+    })
+  }
 
   useEffect(() => {
     async function fetchQuotes() {
@@ -261,6 +279,35 @@ export default function Quotes() {
                         </td>
                         <td style={{ ...tdBase, color: 'var(--text-muted)', fontSize: '12px' }}>
                           {formatDate(q.created_at)}
+                        </td>
+                        <td style={tdBase}>
+                          {followups[q.id] === 'contacted' ? (
+                            <button
+                              onClick={() => toggleFollowup(q.id)}
+                              style={{
+                                background: '#dcfce7', color: '#166534',
+                                border: '1px solid #bbf7d0',
+                                borderRadius: '6px', padding: '3px 10px',
+                                fontSize: '12px', fontWeight: 700,
+                                cursor: 'pointer', whiteSpace: 'nowrap',
+                              }}
+                            >
+                              ✓ Contacted
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => toggleFollowup(q.id)}
+                              style={{
+                                background: '#fff', color: 'var(--text-secondary)',
+                                border: '1px solid var(--border)',
+                                borderRadius: '6px', padding: '3px 10px',
+                                fontSize: '12px', fontWeight: 600,
+                                cursor: 'pointer', whiteSpace: 'nowrap',
+                              }}
+                            >
+                              Mark as Contacted
+                            </button>
+                          )}
                         </td>
                         <td style={tdBase}>
                           <a
