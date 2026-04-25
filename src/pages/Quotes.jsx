@@ -207,16 +207,18 @@ export default function Quotes() {
   })
 
   // ── Summary counts ──
-  const total  = quotes.length
-  const high   = quotes.filter(q => q.leadQuality === 'high').length
-  const medium = quotes.filter(q => q.leadQuality === 'medium').length
-  const low    = quotes.filter(q => q.leadQuality === 'low').length
+  const total     = quotes.length
+  const high      = quotes.filter(q => q.leadQuality === 'high').length
+  const medium    = quotes.filter(q => q.leadQuality === 'medium').length
+  const low       = quotes.filter(q => q.leadQuality === 'low').length
+  const converted = quotes.filter(q => responses[q.id] === 'converted').length
 
   const SUMMARY = [
-    { label: 'Total Quotes',   value: total },
-    { label: 'High Quality',   value: high,   color: '#166534', bg: '#dcfce7' },
-    { label: 'Medium Quality', value: medium, color: '#854d0e', bg: '#fef9c3' },
-    { label: 'Low Quality',    value: low,    color: '#374151', bg: '#f3f4f6' },
+    { label: 'Total Quotes',    value: total },
+    { label: 'High Quality',    value: high,      color: '#166534', bg: '#dcfce7' },
+    { label: 'Medium Quality',  value: medium,    color: '#854d0e', bg: '#fef9c3' },
+    { label: 'Low Quality',     value: low,       color: '#374151', bg: '#f3f4f6' },
+    { label: 'Converted Leads', value: converted, color: '#065f46', bg: '#d1fae5' },
   ]
 
   return (
@@ -622,9 +624,10 @@ export default function Quotes() {
                           {(() => {
                             const current = responses[q.id] || null
                             const OPTS = [
-                              { value: 'no_reply', label: 'No reply', active: { background: '#f3f4f6', color: '#374151' }, idle: { background: '#fff', color: 'var(--text-muted)' } },
-                              { value: 'replied',  label: 'Replied',  active: { background: '#dbeafe', color: '#1e40af' }, idle: { background: '#fff', color: 'var(--text-muted)' } },
-                              { value: 'closed',   label: 'Closed',   active: { background: '#1e293b', color: '#f1f5f9' }, idle: { background: '#fff', color: 'var(--text-muted)' } },
+                              { value: 'no_reply',   label: 'No reply',   active: { background: '#f3f4f6', color: '#374151' }, idle: { background: '#fff', color: 'var(--text-muted)' } },
+                              { value: 'replied',    label: 'Replied',    active: { background: '#dbeafe', color: '#1e40af' }, idle: { background: '#fff', color: 'var(--text-muted)' } },
+                              { value: 'converted',  label: 'Converted',  active: { background: '#059669', color: '#ffffff' }, idle: { background: '#fff', color: 'var(--text-muted)' } },
+                              { value: 'closed',     label: 'Closed',     active: { background: '#1e293b', color: '#f1f5f9' }, idle: { background: '#fff', color: 'var(--text-muted)' } },
                             ]
                             return (
                               <div style={{ display: 'flex', gap: '4px' }}>

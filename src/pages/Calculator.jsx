@@ -33,14 +33,19 @@ function trackEvent(type, fields) {
 
 window.stxSummary = function () {
   try {
-    const events = JSON.parse(localStorage.getItem(STX_KEY) || '[]')
+    const events    = JSON.parse(localStorage.getItem(STX_KEY)        || '[]')
+    const responses = JSON.parse(localStorage.getItem('stx_responses') || '{}')
+    const waClicks  = events.filter(e => e.type === 'WA_CLICK').length
+    const converted = Object.values(responses).filter(v => v === 'converted').length
     return {
-      total:         events.length,
-      waClicks:      events.filter(e => e.type === 'WA_CLICK').length,
-      saves:         events.filter(e => e.type === 'SAVE_QUOTE').length,
-      highQuality:   events.filter(e => e.leadQuality === 'high').length,
-      mediumQuality: events.filter(e => e.leadQuality === 'medium').length,
-      lowQuality:    events.filter(e => e.leadQuality === 'low').length,
+      total:          events.length,
+      waClicks,
+      saves:          events.filter(e => e.type === 'SAVE_QUOTE').length,
+      highQuality:    events.filter(e => e.leadQuality === 'high').length,
+      mediumQuality:  events.filter(e => e.leadQuality === 'medium').length,
+      lowQuality:     events.filter(e => e.leadQuality === 'low').length,
+      converted,
+      conversionRate: waClicks > 0 ? +(converted / waClicks).toFixed(3) : 0,
     }
   } catch (_) {
     return null
