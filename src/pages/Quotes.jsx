@@ -126,6 +126,13 @@ export default function Quotes() {
     catch (_) { return {} }
   })
 
+  async function markContacted(id) {
+    if (!id) return
+    const now = new Date().toISOString()
+    await supabase.from('quotes').update({ last_contacted_at: now }).eq('id', id)
+    setQuotes(prev => prev.map(q => q.id === id ? { ...q, last_contacted_at: now } : q))
+  }
+
   function toggleFollowup(id) {
     if (!id) return
     setFollowups(prev => {
@@ -462,6 +469,7 @@ export default function Quotes() {
                               href={buildWaUrl(q)}
                               target="_blank"
                               rel="noopener noreferrer"
+                              onClick={() => markContacted(q.id)}
                               style={{
                                 display: 'inline-block',
                                 padding: '3px 10px',
@@ -503,6 +511,7 @@ export default function Quotes() {
                               return (
                                 <a
                                   href={href}
+                                  onClick={() => markContacted(q.id)}
                                   style={{
                                     display: 'inline-block',
                                     padding: '3px 10px',
