@@ -105,6 +105,7 @@ export default function Quotes() {
   const [filterQuality,   setFilterQuality]   = useState('all')
   const [filterReadiness, setFilterReadiness] = useState('all')
   const [filterFollowup,  setFilterFollowup]  = useState('all')
+  const [copiedId,        setCopiedId]        = useState(null)
   const [followups, setFollowups] = useState(() => {
     try { return JSON.parse(localStorage.getItem('stx_followups') || '{}') }
     catch (_) { return {} }
@@ -401,25 +402,48 @@ export default function Quotes() {
                             </button>
                           )}
                         </td>
-                        <td style={tdBase}>
-                          <a
-                            href={buildWaUrl(q)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                              display: 'inline-block',
-                              padding: '3px 10px',
-                              fontSize: '12px', fontWeight: 600,
-                              border: '1px solid var(--border)',
-                              borderRadius: '6px',
-                              background: '#fff',
-                              color: '#16a34a',
-                              textDecoration: 'none',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            Open WhatsApp
-                          </a>
+                        <td style={{ ...tdBase, whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                            <a
+                              href={buildWaUrl(q)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                display: 'inline-block',
+                                padding: '3px 10px',
+                                fontSize: '12px', fontWeight: 600,
+                                border: '1px solid var(--border)',
+                                borderRadius: '6px',
+                                background: '#fff',
+                                color: '#16a34a',
+                                textDecoration: 'none',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              Open WhatsApp
+                            </a>
+                            <button
+                              onClick={() => {
+                                const msg = `Hi, just following up on your shipment to ${q.destination_name || '—'}. Your estimated cost was $${q.final_price_usd != null ? Number(q.final_price_usd).toFixed(2) : '—'}. Let us know if you're ready to proceed — we can arrange it quickly.`
+                                navigator.clipboard.writeText(msg).then(() => {
+                                  setCopiedId(q.id)
+                                  setTimeout(() => setCopiedId(null), 1500)
+                                })
+                              }}
+                              style={{
+                                padding: '3px 10px',
+                                fontSize: '12px', fontWeight: 600,
+                                border: '1px solid var(--border)',
+                                borderRadius: '6px',
+                                background: copiedId === q.id ? '#dcfce7' : '#fff',
+                                color:      copiedId === q.id ? '#166534' : 'var(--text-secondary)',
+                                cursor: 'pointer', whiteSpace: 'nowrap',
+                                transition: 'background .15s, color .15s',
+                              }}
+                            >
+                              {copiedId === q.id ? 'Copied ✓' : 'Copy Message'}
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     )})}
