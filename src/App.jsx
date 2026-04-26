@@ -11,6 +11,7 @@ import ProfitDashboard from './pages/ProfitDashboard'
 import ShipmentsDashboard from './pages/ShipmentsDashboard'
 import Quotes from './pages/Quotes'
 import PaymentSuccess from './pages/PaymentSuccess'
+import Orders from './pages/Orders'
 import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
@@ -41,6 +42,9 @@ function App() {
           <ProtectedRoute><Quotes /></ProtectedRoute>
         } />
         <Route path="/success" element={<PaymentSuccess />} />
+        <Route path="/orders" element={
+          <ProtectedRoute><Orders /></ProtectedRoute>
+        } />
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

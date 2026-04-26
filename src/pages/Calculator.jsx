@@ -3,7 +3,7 @@ import { useState, useMemo, useRef } from 'react'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { supabase } from '../supabaseClient'
-import { DESTINATIONS } from '../data/destinations'
+import { DESTINATIONS, WORLD_COUNTRIES, ALL_COUNTRIES } from '../data/destinations'
 import './Calculator.css'
 
 const VOL_DIV_LBS    = 139
@@ -166,7 +166,7 @@ function getHeavyDiscount(chargeLbs) {
   return 0.75
 }
 function calculateQuote({ country, weight, weightUnit, length, width, height, dimUnit, pieces }) {
-  const dest = DESTINATIONS.find(d => d.code === country)
+  const dest = ALL_COUNTRIES.find(d => d.code === country)
   const actualLbs = toLbs(parseFloat(weight) || 0, weightUnit)
   if (!dest || actualLbs <= 0) return null
 
@@ -226,7 +226,7 @@ export default function Calculator() {
     [country, weight, weightUnit, length, width, height, dimUnit, pieces]
   )
 
-  const activeDest = DESTINATIONS.find(d => d.code === country)
+  const activeDest = ALL_COUNTRIES.find(d => d.code === country)
   const activeDestinations = DESTINATIONS.filter(d => d.enabled)
 
   // ── Quote save (intentional only — triggered by user action) ──
@@ -293,16 +293,33 @@ export default function Calculator() {
               {/* Destination */}
               <div className="calc-section">
                 <h3>Destination</h3>
-                <div className="country-selector">
-                  {activeDestinations.map(d => (
-                    <label key={d.code} className={`country-option ${country === d.code ? 'selected' : ''}`}>
-                      <input type="radio" name="country" value={d.code}
-                        checked={country === d.code}
-                        onChange={e => setCountry(e.target.value)} />
-                      <span className="country-flag">{d.flag}</span>
-                      <span className="country-name">{d.name}</span>
-                    </label>
-                  ))}
+                <div className="dest-select-wrap">
+                  <select
+                    className="form-input dest-select"
+                    value={country}
+                    onChange={e => setCountry(e.target.value)}
+                  >
+                    <option value="">Select destination country…</option>
+                    <optgroup label="Gulf &amp; MENA">
+                      {DESTINATIONS.filter(d => d.enabled).map(d => (
+                        <option key={d.code} value={d.code}>{d.flag} {d.name}</option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="International">
+                      {WORLD_COUNTRIES.map(d => (
+                        <option key={d.code} value={d.code}>{d.flag} {d.name}</option>
+                      ))}
+                    </optgroup>
+                  </select>
+                  {activeDest && (
+                    <div className="dest-select-preview">
+                      <span className="dest-preview-flag">{activeDest.flag}</span>
+                      <span className="dest-preview-name">{activeDest.name}</span>
+                      {activeDest.zone === 'INTL' && (
+                        <span className="dest-intl-badge">International rate</span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -803,31 +820,6 @@ export default function Calculator() {
             </div>
 
           </div>
-
-          {/* ── Internal Dashboard (Dev Only) ── */}
-          {calc && (
-            <div className="internal-dashboard">
-              <h3>Internal Pricing (Dev Only)</h3>
-
-              <div>Estimated Cost: ${calc.estimatedCost?.toFixed(2)}</div>
-              <div>Final Price: ${calc.total?.toFixed(2)}</div>
-              <div>Margin: ${calc.marginUsd?.toFixed(2)}</div>
-              <div>Margin %: {(calc.marginPct * 100)?.toFixed(1)}%</div>
-
-              <hr />
-
-              <div>Chargeable Weight: {r2(calc.chargeLbs)} lbs</div>
-              <div>Actual Weight: {r2(calc.actualLbs)} lbs</div>
-              {calc.volLbs !== null && <div>Volumetric: {r2(calc.volLbs)} lbs</div>}
-
-              <hr />
-
-              <div>Oversize: {calc.oversizeFlag ? 'Yes' : 'No'}</div>
-              <div>Non-Conveyable Fee: ${calc.nonConvFee?.toFixed(2)}</div>
-              <div>Overweight Fee: ${calc.overweightFee?.toFixed(2)}</div>
-              <div>Piece Fee: ${calc.pieceFee?.toFixed(2)}</div>
-            </div>
-          )}
 
           {/* ── Rate Table ── */}
           <div className="rate-table-section">
